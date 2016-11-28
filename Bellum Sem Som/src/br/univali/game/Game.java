@@ -1,12 +1,6 @@
 package br.univali.game;
 
 import java.io.IOException;
-import java.rmi.NotBoundException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 
 import javax.swing.JOptionPane;
 
@@ -40,28 +34,8 @@ public class Game {
 	private Spawner spawner;
 	private HUDController hud;
 	private MenuController menu;
-	
-	private Registry registry = null;
-	private Remote stub = null;
-	private NetMode mode;
 
-	public Game(RenderMode renderMode, String textureFolder, NetMode mode) {
-		this.mode = mode;
-		
-		if (mode == NetMode.SERVER) {
-			try {
-				registry = LocateRegistry.createRegistry(8080);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		} else if (mode == NetMode.CLIENT) {
-			try {
-				registry = LocateRegistry.getRegistry(8080);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
-		
+	public Game(RenderMode renderMode, String textureFolder) {
 		window = WindowFactory.createWindow(renderMode, "Bellum", 800, 600);
 		renderer = window.getRenderer();
 		textureManager = new TextureManager(renderer, textureFolder);
@@ -111,7 +85,7 @@ public class Game {
 		running = true;
 		
 		while (running) {
-			logic.prepareGame();
+			logic.prepareGame();	
 	
 			System.out.println("Displaying menu...");
 			beginMenu();
@@ -132,11 +106,7 @@ public class Game {
 				displayDeathScreen();
 			}
 			
-			try {
-				collection.clear();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			collection.clear();
 		}
 	}
 
@@ -169,7 +139,7 @@ public class Game {
 	 * Inicia o loop principal do jogo.
 	 * @return true se o jogador morreu.
 	 */
-	private boolean beginMainLoop() {
+	private boolean beginMainLoop() {		
 		lastFrame = System.nanoTime();
 		player.resetFlags();
 		while (running) {		
@@ -180,42 +150,33 @@ public class Game {
 			//SoundEffect.BACKGROUND.restart();
 			
 			
-			player.setMousePosition(window.getMousePosition());
 			
-			if (mode == NetMode.SERVER) {
-				logic.cleanupBullets();
-				
-				logic.tryGenerateEnemy();
-				logic.tryGenerateHealth();
-				logic.tryGenerateSpecial();
-				
-				player.updateTank(delta);
-				logic.updateEnemies(delta);
-				physics.updatePositions(delta);
-				
-				logic.handleEnemyCollisions(physics.checkEnemyCollisions());
-				logic.handleGroundCollisions(physics.checkGroundCollisions());
-				logic.handlePlayerCollisions(physics.checkPlayerCollisions());
-				logic.handlePickupCollisions(physics.checkPickupCollisions());
+			player.setMousePosition(window.getMousePosition());			
+			logic.cleanupBullets();
 			
-				if (collection.getTank().getHealth() <= 0) {
-					return true;
-				}
-				
-				animation.updateAnimations(delta);
-				
-				//drawGame();
-				//renderer.draw();
-				
-				lastFrame = time;
-				
-				exportCollection();
-			} else if (mode == NetMode.CLIENT) {
-				importCollection();
-				
-				drawGame();
-				renderer.draw();
+			logic.tryGenerateEnemy();
+			logic.tryGenerateHealth();
+			logic.tryGenerateSpecial();
+			
+			player.updateTank(delta);
+			logic.updateEnemies(delta);
+			physics.updatePositions(delta);
+			
+			logic.handleEnemyCollisions(physics.checkEnemyCollisions());
+			logic.handleGroundCollisions(physics.checkGroundCollisions());
+			logic.handlePlayerCollisions(physics.checkPlayerCollisions());
+			logic.handlePickupCollisions(physics.checkPickupCollisions());
+		
+			if (collection.getTank().getHealth() <= 0) {
+				return true;
 			}
+			
+			animation.updateAnimations(delta);
+			
+			drawGame();
+			renderer.draw();
+			
+			lastFrame = time;
 		}
 		
 		return false;
@@ -227,8 +188,6 @@ public class Game {
 		drawing.drawObjects(renderer);
 		hud.updateHUD();
 		hud.drawCannonCharge(calculateCannonBarFraction(), player.isCannonOnCooldown(), player.isCannonCharging());
-		
-
 		hud.drawShieldEnergy(collection.getTank().getShieldEnergy());
 		
 		if (collection.getTank().getPowerupTime() > 0) {
@@ -243,30 +202,6 @@ public class Game {
 			return 1 - (player.getRemainingCannonCooldown() / GameConstants.CANNON_COOLDOWN);
 		} else {
 			return player.getCannonCharge() / GameConstants.MAX_CANNONBALL_TIME;
-		}
-	}
-	
-	public void exportCollection() {
-		try {
-			if (stub == null) {
-				stub = UnicastRemoteObject.exportObject(collection, 8080);
-			}
-			
-			registry.rebind("object", stub);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void importCollection() {
-		try {
-			collection = (GameObjectCollection) registry.lookup("object");
-			drawing.setCollection(collection);
-			hud.setCollection(collection);
-			
-		} catch (RemoteException | NotBoundException e) {
-			collection = null;
-			e.printStackTrace();
 		}
 	}
 }

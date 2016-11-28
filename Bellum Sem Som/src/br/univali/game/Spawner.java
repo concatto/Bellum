@@ -7,6 +7,7 @@ import br.univali.game.objects.GameObject;
 import br.univali.game.objects.ObjectType;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.objects.Projectile;
+import br.univali.game.sound.SoundEffect;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;
 import br.univali.game.util.IntRect;
