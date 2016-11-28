@@ -1,5 +1,6 @@
 package br.univali.game;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import br.univali.game.objects.GameObject;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.objects.Projectile;
 
-public class GameObjectCollection {
+public class GameObjectCollection implements GameObjectCollectionInterface {
 	private List<Enemy> enemies = new ArrayList<>();
 	private List<Projectile> projectiles = new ArrayList<>();
 	private List<DrawableObject> effects = new ArrayList<>();
@@ -40,7 +41,7 @@ public class GameObjectCollection {
 		return tank;
 	}
 	
-	public List<DrawableObject> getEffects() {
+	public List<DrawableObject> getEffects(){
 		return effects;
 	}
 	
@@ -80,7 +81,7 @@ public class GameObjectCollection {
 		projectiles.remove(projectile);
 	}
 	
-	public void clear() {
+	public void clear() throws RemoteException {
 		projectiles.clear();
 		effects.clear();
 		enemies.clear();

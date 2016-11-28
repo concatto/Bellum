@@ -62,4 +62,8 @@ public class DrawingController {
 		
 		renderer.drawImage(background.getId(), x, y);
 	}
+	
+	public void setCollection(GameObjectCollection collection) {
+		this.collection = collection;
+	}
 }

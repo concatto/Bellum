@@ -106,5 +106,7 @@ public class HUDController {
 		drawBar(new FloatRect(x, y, width, height), powerupTime, 0.73f, 0.91f, 0.95f);
 	}
 	
-	   
+	public void setCollection(GameObjectCollection collection) {
+		this.collection = collection;
+	}
 }

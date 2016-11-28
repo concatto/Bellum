@@ -58,7 +58,7 @@ public class Application {
 
 			dialog.dispose();
 			
-			new Thread(() -> new Game(mode, folder)).start();
+			new Thread(() -> new Game(mode, folder, NetMode.CLIENT)).start();
 		};
 
 		openGLButton.addActionListener(listener);
