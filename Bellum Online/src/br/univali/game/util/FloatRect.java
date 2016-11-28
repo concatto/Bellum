@@ -1,6 +1,8 @@
 package br.univali.game.util;
 
-public class FloatRect {
+import java.io.Serializable;
+
+public class FloatRect implements Serializable {
 	public float x;
 	public float y;
 	public float width;

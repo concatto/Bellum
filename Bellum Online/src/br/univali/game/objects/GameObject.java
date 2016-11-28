@@ -1,10 +1,12 @@
 package br.univali.game.objects;
 
+import java.io.Serializable;
+
 import br.univali.game.util.Direction;
 import br.univali.game.util.FloatRect;
 import br.univali.game.util.FloatVec;
 
-public class GameObject {
+public class GameObject implements Serializable {
 	private FloatVec motionVector = new FloatVec(0, 0);
 	private FloatRect boundingBox = new FloatRect();
 	private FloatRect lastBoundingBox = new FloatRect();

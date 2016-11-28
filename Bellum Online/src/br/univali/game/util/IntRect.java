@@ -1,6 +1,8 @@
 package br.univali.game.util;
 
-public class IntRect {
+import java.io.Serializable;
+
+public class IntRect implements Serializable {
 	public int x;
 	public int y;
 	public int width;

@@ -1,6 +1,8 @@
 package br.univali.game.util;
 
-public class IntVec {
+import java.io.Serializable;
+
+public class IntVec implements Serializable {
 	public final int x;
 	public final int y;
 	

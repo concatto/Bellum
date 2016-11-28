@@ -1,6 +1,7 @@
 package br.univali.game;
 
 import java.io.IOException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -20,6 +21,8 @@ import br.univali.game.controllers.PlayerController;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.graphics.Renderer;
+import br.univali.game.remote.RemoteInterface;
+import br.univali.game.remote.Server;
 import br.univali.game.sound.*;
 import br.univali.game.window.GameWindow;
 import br.univali.game.window.RenderMode;
@@ -32,36 +35,19 @@ public class Game {
 	private GameObjectCollection collection;
 	private LogicController logic;
 	private PhysicsController physics;
-	private DrawingController drawing;
+	
 	private AnimationController animation;
 	private boolean running;
 	private long lastFrame;
 	private PlayerController player;
 	private Spawner spawner;
-	private HUDController hud;
+
 	private MenuController menu;
 	
 	private Registry registry = null;
-	private Remote stub = null;
-	private NetMode mode;
+	private RemoteInterface server;
 
-	public Game(RenderMode renderMode, String textureFolder, NetMode mode) {
-		this.mode = mode;
-		
-		if (mode == NetMode.SERVER) {
-			try {
-				registry = LocateRegistry.createRegistry(8080);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		} else if (mode == NetMode.CLIENT) {
-			try {
-				registry = LocateRegistry.getRegistry(8080);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
-		
+	public Game(RenderMode renderMode, String textureFolder) {		
 		window = WindowFactory.createWindow(renderMode, "Bellum", 800, 600);
 		renderer = window.getRenderer();
 		textureManager = new TextureManager(renderer, textureFolder);
@@ -80,6 +66,17 @@ public class Game {
 		spawner = new Spawner(textureManager, collection);
 		System.out.println("Managers created.");
 		
+		
+		try {
+			registry = LocateRegistry.createRegistry(8080);
+			server = new Server(collection, this);
+			
+			registry.bind("server", UnicastRemoteObject.exportObject(server, 8080));
+		} catch (RemoteException | AlreadyBoundException e) {
+			e.printStackTrace();
+		}
+		
+		
 		spawner.spawnTank();
 		
 		System.out.println("Creating controllers...");
@@ -90,10 +87,8 @@ public class Game {
 		player.setRightKey('D');
 		player.setShieldKey(KeyboardEvent.SPACE);
 		
-		hud = new HUDController(collection, renderer, window.getSize());
 		logic = new LogicController(collection, spawner, window.getSize());
 		physics = new PhysicsController(collection, logic.getGroundLevel());
-		drawing = new DrawingController(collection, textureManager, window.getSize());
 		animation = new AnimationController(collection, textureManager);
 		menu = new MenuController(player, textureManager, window.getSize());		
 		System.out.println("Controllers created.");
@@ -115,14 +110,6 @@ public class Game {
 	
 			System.out.println("Displaying menu...");
 			beginMenu();
-			if(textureFolder.equals("halloween")){
-				//SoundEffect.MENU.stop();
-				//SoundEffect.BAT.play();
-			}else{
-				//SoundEffect.MENU.stop();
-				//SoundEffect.BACKGROUND.play();
-			}
-			
 			System.out.println("Done.");
 			
 			System.out.println("Beginning main loop...");
@@ -141,35 +128,37 @@ public class Game {
 	}
 
 	private void displayDeathScreen() {
-		menu.prepareToDie();
-		//SoundEffect.BACKGROUND.stop();
-		//SoundEffect.DEAD.play();
-
-		
-		do {
-			drawGame();
-			menu.drawYouDied(renderer);
-			renderer.draw();
-			
-		} while (!menu.didClick());
+//		menu.prepareToDie();
+//		
+//		do {
+//			drawGame();
+//			menu.drawYouDied(renderer);
+//			renderer.draw();
+//			
+//		} while (!menu.didClick());
 	}
 	
 	private void beginMenu() {
-		window.display();
+//		window.display();
 		
-		//SoundEffect.MENU.play();
-		do {
-			drawGame();
-			menu.drawGameMenu(renderer);
-			renderer.draw();
-		} while (!menu.didClick());
+		try {
+			do {
+//				drawGame();
+//				menu.drawGameMenu(renderer);
+//				renderer.draw();
+				
+				System.out.println(server.shouldStart());
+			} while (!server.shouldStart());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
 	 * Inicia o loop principal do jogo.
 	 * @return true se o jogador morreu.
 	 */
-	private boolean beginMainLoop() {
+	public boolean beginMainLoop() {
 		lastFrame = System.nanoTime();
 		player.resetFlags();
 		while (running) {		
@@ -180,93 +169,33 @@ public class Game {
 			//SoundEffect.BACKGROUND.restart();
 			
 			
-			player.setMousePosition(window.getMousePosition());
+			//player.setMousePosition(window.getMousePosition());
 			
-			if (mode == NetMode.SERVER) {
-				logic.cleanupBullets();
-				
-				logic.tryGenerateEnemy();
-				logic.tryGenerateHealth();
-				logic.tryGenerateSpecial();
-				
-				player.updateTank(delta);
-				logic.updateEnemies(delta);
-				physics.updatePositions(delta);
-				
-				logic.handleEnemyCollisions(physics.checkEnemyCollisions());
-				logic.handleGroundCollisions(physics.checkGroundCollisions());
-				logic.handlePlayerCollisions(physics.checkPlayerCollisions());
-				logic.handlePickupCollisions(physics.checkPickupCollisions());
+			logic.cleanupBullets();
 			
-				if (collection.getTank().getHealth() <= 0) {
-					return true;
-				}
-				
-				animation.updateAnimations(delta);
-				
-				//drawGame();
-				//renderer.draw();
-				
-				lastFrame = time;
-				
-				exportCollection();
-			} else if (mode == NetMode.CLIENT) {
-				importCollection();
-				
-				drawGame();
-				renderer.draw();
+			logic.tryGenerateEnemy();
+			logic.tryGenerateHealth();
+			logic.tryGenerateSpecial();
+			
+			player.updateTank(delta);
+			logic.updateEnemies(delta);
+			physics.updatePositions(delta);
+			
+			logic.handleEnemyCollisions(physics.checkEnemyCollisions());
+			logic.handleGroundCollisions(physics.checkGroundCollisions());
+			logic.handlePlayerCollisions(physics.checkPlayerCollisions());
+			logic.handlePickupCollisions(physics.checkPickupCollisions());
+		
+			if (collection.getTank().getHealth() <= 0) {
+				return true;
 			}
+			
+			animation.updateAnimations(delta);	
+			lastFrame = time;
+			
+			//exportCollection();
 		}
 		
 		return false;
-	}
-	
-	private void drawGame() {
-		drawing.clear(renderer);
-		drawing.drawBackground(renderer);
-		drawing.drawObjects(renderer);
-		hud.updateHUD();
-		hud.drawCannonCharge(calculateCannonBarFraction(), player.isCannonOnCooldown(), player.isCannonCharging());
-		
-
-		hud.drawShieldEnergy(collection.getTank().getShieldEnergy());
-		
-		if (collection.getTank().getPowerupTime() > 0) {
-			hud.drawPowerupBar(collection.getTank().getPowerupTime());
-		}
-	}
-	
-	private float calculateCannonBarFraction() {
-		boolean cooldown = player.isCannonOnCooldown();
-		
-		if (cooldown) {
-			return 1 - (player.getRemainingCannonCooldown() / GameConstants.CANNON_COOLDOWN);
-		} else {
-			return player.getCannonCharge() / GameConstants.MAX_CANNONBALL_TIME;
-		}
-	}
-	
-	public void exportCollection() {
-		try {
-			if (stub == null) {
-				stub = UnicastRemoteObject.exportObject(collection, 8080);
-			}
-			
-			registry.rebind("object", stub);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void importCollection() {
-		try {
-			collection = (GameObjectCollection) registry.lookup("object");
-			drawing.setCollection(collection);
-			hud.setCollection(collection);
-			
-		} catch (RemoteException | NotBoundException e) {
-			collection = null;
-			e.printStackTrace();
-		}
 	}
 }

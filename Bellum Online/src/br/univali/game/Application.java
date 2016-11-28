@@ -22,23 +22,48 @@ public class Application {
 		JRadioButton normal = new JRadioButton("Normal");
 		JRadioButton halloween = new JRadioButton("Halloween");
 
-		JPanel radioPanel = new JPanel();
-		radioPanel.setLayout(new BoxLayout(radioPanel, BoxLayout.Y_AXIS));
-		radioPanel.add(normal);
-		radioPanel.add(halloween);
-		radioPanel.setBorder(BorderFactory.createTitledBorder("Tema"));
-		radioPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+		JPanel themeRadioPanel = new JPanel();
+		themeRadioPanel.setLayout(new BoxLayout(themeRadioPanel, BoxLayout.Y_AXIS));
+		themeRadioPanel.add(normal);
+		themeRadioPanel.add(halloween);
+		themeRadioPanel.setBorder(BorderFactory.createTitledBorder("Tema"));
+		themeRadioPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
-		JPanel radioContainer = new JPanel();
-		radioContainer.add(radioPanel);
-		radioContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		JPanel themeContainer = new JPanel();
+		themeContainer.add(themeRadioPanel);
+		themeContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-		ButtonGroup group = new ButtonGroup();
-		group.add(normal);
-		group.add(halloween);
+		ButtonGroup themeGroup = new ButtonGroup();
+		themeGroup.add(normal);
+		themeGroup.add(halloween);
 
-		group.setSelected(normal.getModel(), true);
+		themeGroup.setSelected(normal.getModel(), true);
 
+		
+		
+		JRadioButton client = new JRadioButton("Cliente");
+		JRadioButton server = new JRadioButton("Servidor");
+
+		JPanel modeRadioPanel = new JPanel();
+		modeRadioPanel.setLayout(new BoxLayout(modeRadioPanel, BoxLayout.Y_AXIS));
+		modeRadioPanel.add(client);
+		modeRadioPanel.add(server);
+		modeRadioPanel.setBorder(BorderFactory.createTitledBorder("Modo"));
+		modeRadioPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+
+		JPanel modeContainer = new JPanel();
+		modeContainer.add(modeRadioPanel);
+		modeContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+		ButtonGroup modeGroup = new ButtonGroup();
+		modeGroup.add(client);
+		modeGroup.add(server);
+
+		modeGroup.setSelected(normal.getModel(), true);
+
+
+		
+		
 		JButton openGLButton = new JButton("Iniciar com OpenGL");
 		JButton swingButton = new JButton("Iniciar com Swing");
 
@@ -49,16 +74,27 @@ public class Application {
 		JPanel root = new JPanel();
 		root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
 
+		JPanel radioContainer = new JPanel();
+		radioContainer.add(themeContainer);
+		radioContainer.add(modeContainer);
+		
 		root.add(radioContainer);
 		root.add(buttonPanel);
 
 		ActionListener listener = e -> {
-			String folder = group.getSelection() == normal.getModel() ? "regular" : "halloween";
+			String folder = themeGroup.getSelection() == normal.getModel() ? "regular" : "halloween";
 			RenderMode mode = e.getSource() == openGLButton ? RenderMode.OPENGL : RenderMode.SWING;
-
+			
+			Runnable r;
+			if (modeGroup.getSelection() == server.getModel()) {
+				r = () -> new Game(mode, folder);
+			} else {
+				r = () -> new GameClient(mode, folder);
+			}
+			
 			dialog.dispose();
 			
-			new Thread(() -> new Game(mode, folder, NetMode.CLIENT)).start();
+			new Thread(r).start();
 		};
 
 		openGLButton.addActionListener(listener);

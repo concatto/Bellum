@@ -1,5 +1,6 @@
 package br.univali.game;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import br.univali.game.objects.GameObject;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.objects.Projectile;
 
-public class GameObjectCollection implements GameObjectCollectionInterface {
+public class GameObjectCollection implements Serializable {
 	private List<Enemy> enemies = new ArrayList<>();
 	private List<Projectile> projectiles = new ArrayList<>();
 	private List<DrawableObject> effects = new ArrayList<>();

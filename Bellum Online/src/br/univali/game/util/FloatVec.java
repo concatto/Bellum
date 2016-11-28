@@ -1,6 +1,8 @@
 package br.univali.game.util;
 
-public class FloatVec {
+import java.io.Serializable;
+
+public class FloatVec implements Serializable {
 	public float x;
 	public float y;
 	
