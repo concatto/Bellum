@@ -1,6 +1,30 @@
 package br.univali.game.graphics.opengl;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBegin;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glColor4f;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glEnd;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glRotatef;
+import static org.lwjgl.opengl.GL11.glScalef;
+import static org.lwjgl.opengl.GL11.glTexCoord2f;
+import static org.lwjgl.opengl.GL11.glTranslatef;
+import static org.lwjgl.opengl.GL11.glVertex2f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,14 +39,14 @@ import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;
 import br.univali.game.util.IntVec;
 
-public class OpenGLRenderer implements Renderer {
+public class GLRenderer implements Renderer {
 	private long window;
 	private float rotation;
 	private FloatVec scale;
-	private TextureLoader textureLoader = new TextureLoader();
-	private List<Texture> textureList = new ArrayList<>();
+	private GLImageLoader textureLoader = new GLImageLoader();
+	private List<GLTexture> textureList = new ArrayList<>();
 	
-	public OpenGLRenderer(long window) {
+	public GLRenderer(long window) {
 		this.window = window;
 		setRotation(0);
 		setScale(new FloatVec(1, 1));
@@ -110,7 +134,7 @@ public class OpenGLRenderer implements Renderer {
 
 	@Override
 	public int loadImage(String path) throws IOException {
-		Texture tex = textureLoader.getTexture(path);
+		GLTexture tex = textureLoader.getTexture(path);
 		
 		int position = textureList.size();
 		textureList.add(tex);
@@ -129,7 +153,7 @@ public class OpenGLRenderer implements Renderer {
 		glEnable(GL_TEXTURE_2D);
 		glPushMatrix();
 		
-		Texture tex = textureList.get(image);
+		GLTexture tex = textureList.get(image);
 		tex.bind();
 		
 		applyTransforms(x, y, tex.getImageWidth(), tex.getImageHeight());
@@ -177,7 +201,7 @@ public class OpenGLRenderer implements Renderer {
 		glEnable(GL_TEXTURE_2D);
 		glPushMatrix();
 		
-		Texture tex = textureList.get(image);
+		GLTexture tex = textureList.get(image);
 		tex.bind();
 		
 		float xCoef = tex.getWidth() / tex.getImageWidth();
@@ -211,7 +235,7 @@ public class OpenGLRenderer implements Renderer {
 
 	@Override
 	public IntVec getImageSize(int image) {
-		Texture tex = textureList.get(image);
+		GLTexture tex = textureList.get(image);
 		return new IntVec(tex.getImageWidth(), tex.getImageHeight());
 	}
 

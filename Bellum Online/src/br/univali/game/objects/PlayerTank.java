@@ -5,6 +5,7 @@ public class PlayerTank extends CombatObject {
 	private boolean poweredUp = false;
 	private float shieldEnergy = 1;
 	private float powerupTime = 0;
+	private boolean cannonCharging = false;
 	
 	public PlayerTank() {
 		
@@ -41,5 +42,13 @@ public class PlayerTank extends CombatObject {
 	
 	public void setPowerupTime(float powerupTime) {
 		this.powerupTime = powerupTime;
+	}
+
+	public boolean isCannonCharging() {
+		return cannonCharging;
+	}
+	
+	public void setCannonCharging(boolean cannonCharging) {
+		this.cannonCharging = cannonCharging;
 	}
 }

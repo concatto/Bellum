@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.univali.game.GameConstants;
-import br.univali.game.GameObjectCollection;
 import br.univali.game.event.collision.BinaryCollisionEvent;
 import br.univali.game.event.collision.CollisionEvent;
 import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObject;
+import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.Projectile;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;

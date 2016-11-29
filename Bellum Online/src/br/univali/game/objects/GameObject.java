@@ -12,7 +12,7 @@ public class GameObject implements Serializable {
 	private FloatRect lastBoundingBox = new FloatRect();
 	private boolean affectedByGravity = false;
 	private float speed = 0;
-	private Direction direction;
+	private Direction direction; //Used to control mirroring
 	private ObjectType type;
 
 	public GameObject() {

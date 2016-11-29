@@ -1,4 +1,4 @@
-package br.univali.game;
+package br.univali.game.graphics;
 
 import java.util.List;
 

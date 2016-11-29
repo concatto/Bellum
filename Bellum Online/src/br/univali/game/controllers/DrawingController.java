@@ -1,11 +1,11 @@
 package br.univali.game.controllers;
 
-import br.univali.game.GameObjectCollection;
-import br.univali.game.MiscType;
-import br.univali.game.Texture;
-import br.univali.game.TextureManager;
 import br.univali.game.graphics.Renderer;
+import br.univali.game.graphics.Texture;
+import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.DrawableObject;
+import br.univali.game.objects.GameObjectCollection;
+import br.univali.game.objects.MiscType;
 import br.univali.game.util.Direction;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;

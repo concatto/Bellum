@@ -4,13 +4,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import br.univali.game.GameConstants;
-import br.univali.game.GameObjectCollection;
 import br.univali.game.Spawner;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.event.input.MouseEvent;
 import br.univali.game.objects.DrawableObject;
+import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.sound.SoundEffect;
 import br.univali.game.util.Direction;
@@ -38,7 +38,6 @@ public class PlayerController {
 	private IntVec mousePosition;
 	private long lastBullet = 0;
 	private long lastCannon = 0;
-	private boolean cannonCharging = false;
 	
 	public PlayerController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
 		this.spawner = spawner;
@@ -106,24 +105,51 @@ public class PlayerController {
 	}
 	
 	public void updateTank(float delta) {
-		//Teclado
-		Direction direction = computeDirection();
+		handleMovement();
+		handleWeapons();
+		handleShield(delta);
 		
-		if (direction == Direction.NONE) {
-			tank.setMotionVector(0, 0);
-		} else {
-			tank.setDirection(direction);
-			float y = tank.getMotionVector().y;
+		if (tank.isPoweredUp()) {
+			tank.setPowerupTime(tank.getPowerupTime() - delta * GameConstants.SPECIAL_DEPLETION_RATE);
 			
-			if (direction == Direction.LEFT && tank.getX() > 0) {
-				tank.setMotionVector(-1, y);
-			} else if (direction == Direction.RIGHT && tank.getX() + tank.getWidth() < windowSize.x) {
-				tank.setMotionVector(1, tank.getMotionVector().y);	
-			} else {
-				tank.setMotionVector(0, y);
+			if (tank.getPowerupTime() < 0) {
+				tank.setPowerupTime(0);
+				tank.setPoweredUp(false);
+			}
+		}
+	}
+
+	private void handleWeapons() {
+		long time = System.currentTimeMillis();
+		
+		if (pressedButtons.contains(bulletButton)) {
+			long difference = time - lastBullet;
+			if (tank.isPoweredUp() && difference > GameConstants.SPECIAL_BULLET_COOLDOWN) {
+				spawner.spawnSpecialBullet(tank, mousePosition.toFloat());
+				lastBullet = time;
+			} else if (!tank.isPoweredUp() && difference > GameConstants.BULLET_COOLDOWN) {
+				spawner.spawnBullet(tank, mousePosition.toFloat());
+				lastBullet = time;
 			}
 		}
 		
+		if (pressedButtons.contains(cannonballButton)) {
+			if (canFireCannon() && !tank.isCannonCharging()) {
+				lastCannon = time;
+				tank.setCannonCharging(true);
+			}
+		} else {
+			if (tank.isCannonCharging()) {
+				float force = getCannonCharge() + GameConstants.MIN_CANNONBALL_TIME;
+				spawner.spawnCannonball(force, tank, mousePosition.toFloat());
+				
+				lastCannon = time;
+			}
+			tank.setCannonCharging(false);
+		}
+	}
+
+	private void handleShield(float delta) {
 		float newEnergy;
 		if (tank.isShielded()) {
 			newEnergy = tank.getShieldEnergy() - delta * GameConstants.SHIELD_DEPLETION_RATE;
@@ -154,52 +180,29 @@ public class PlayerController {
 			}
 			tank.setShielded(false);
 		}
+	}
+
+	private void handleMovement() {
+		Direction direction = computeDirection();
 		
-		
-		if (tank.isPoweredUp()) {
-			tank.setPowerupTime(tank.getPowerupTime() - delta * GameConstants.SPECIAL_DEPLETION_RATE);
-			
-			if (tank.getPowerupTime() < 0) {
-				tank.setPowerupTime(0);
-				tank.setPoweredUp(false);
-			}
-		}
-		
-		
-		long time = System.currentTimeMillis();
-		
-		//Mouse
-		if (pressedButtons.contains(bulletButton)) {
-			long difference = time - lastBullet;
-			if (tank.isPoweredUp() && difference > GameConstants.SPECIAL_BULLET_COOLDOWN) {
-				//SoundEffect.SPECIALSHOOT.play();
-				spawner.spawnSpecialBullet(tank, mousePosition.toFloat());
-				lastBullet = time;
-			} else if (!tank.isPoweredUp() && difference > GameConstants.BULLET_COOLDOWN) {
-				//SoundEffect.SHOOT.play();
-				spawner.spawnBullet(tank, mousePosition.toFloat());
-				lastBullet = time;
-			}
-		}
-		
-		if (pressedButtons.contains(cannonballButton)) {
-			if (canFireCannon() && !cannonCharging) {
-				lastCannon = time;
-				cannonCharging = true;
-			}
+		if (direction == Direction.NONE) {
+			tank.setMotionVector(0, 0);
 		} else {
-			if (cannonCharging) {
-				//SoundEffect.CANNON.play();
-				spawner.spawnCannonball(getCannonCharge() + GameConstants.MIN_CANNONBALL_TIME, tank, mousePosition.toFloat());
-				
-				lastCannon = time;
+			tank.setDirection(direction);
+			float y = tank.getMotionVector().y;
+			
+			if (direction == Direction.LEFT && tank.getX() > 0) {
+				tank.setMotionVector(-1, y);
+			} else if (direction == Direction.RIGHT && tank.getX() + tank.getWidth() < windowSize.x) {
+				tank.setMotionVector(1, tank.getMotionVector().y);	
+			} else {
+				tank.setMotionVector(0, y);
 			}
-			cannonCharging = false;
 		}
 	}
 	
 	public boolean isCannonCharging() {
-		return cannonCharging;
+		return tank.isCannonCharging();
 	}
 	
 	public float getCannonCharge() {
@@ -233,6 +236,6 @@ public class PlayerController {
 	public void resetFlags() {
 		lastBullet = 0;
 		lastCannon = 0;
-		cannonCharging = false;
+		tank.setCannonCharging(false);
 	}
 }

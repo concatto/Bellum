@@ -1,4 +1,4 @@
-package br.univali.game;
+package br.univali.game.graphics;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import br.univali.game.graphics.Renderer;
+import br.univali.game.objects.MiscType;
 import br.univali.game.objects.ObjectType;
 import br.univali.game.util.IntRect;
 import br.univali.game.util.IntVec;

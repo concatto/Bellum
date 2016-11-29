@@ -8,9 +8,9 @@ import java.rmi.registry.Registry;
 
 import br.univali.game.controllers.DrawingController;
 import br.univali.game.controllers.HUDController;
-import br.univali.game.controllers.LogicController;
-import br.univali.game.controllers.PhysicsController;
 import br.univali.game.graphics.Renderer;
+import br.univali.game.graphics.TextureManager;
+import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.window.GameWindow;
 import br.univali.game.window.RenderMode;
@@ -30,12 +30,11 @@ public class GameClient {
 		renderer = window.getRenderer();
 		textureManager = new TextureManager(renderer, textureFolder);
 		
-		
 		try {
 			Registry registry = LocateRegistry.getRegistry(8080);
 			server = (RemoteInterface) registry.lookup("server");
 		} catch (RemoteException | NotBoundException e) {
-			
+			e.printStackTrace();
 		}
 		
 		try {
@@ -62,19 +61,23 @@ public class GameClient {
 		try {
 			server.startGame();
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		new Thread(() -> {
 			while (true) {
+				long start = System.currentTimeMillis();
 				try {
 					collection = server.getGameObjectCollection();
 					drawing.setCollection(collection);
 					hud.setCollection(collection);
-				} catch (RemoteException e1) {
+					
+					Thread.sleep(16);
+				} catch (RemoteException | InterruptedException e1) {
 					e1.printStackTrace();
 				}
+				
+				System.out.println("Took " + (System.currentTimeMillis() - start));
 			}
 		}).start();
 		

@@ -3,10 +3,10 @@ package br.univali.game.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.univali.game.GameObjectCollection;
-import br.univali.game.Texture;
-import br.univali.game.TextureManager;
+import br.univali.game.graphics.Texture;
+import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.DrawableObject;
+import br.univali.game.objects.GameObjectCollection;
 
 public class AnimationController {
 	private TextureManager manager;

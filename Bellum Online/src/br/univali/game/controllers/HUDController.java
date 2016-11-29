@@ -4,10 +4,10 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
 import br.univali.game.GameConstants;
-import br.univali.game.GameObjectCollection;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;
+import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.util.FloatRect;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;

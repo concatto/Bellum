@@ -3,7 +3,6 @@ package br.univali.game.controllers;
 import java.util.List;
 
 import br.univali.game.GameConstants;
-import br.univali.game.GameObjectCollection;
 import br.univali.game.Spawner;
 import br.univali.game.behaviour.LinearMotionBehaviour;
 import br.univali.game.behaviour.MotionBehaviour;
@@ -14,6 +13,7 @@ import br.univali.game.event.collision.CollisionEvent;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.Enemy;
+import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.ObjectType;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.objects.Projectile;

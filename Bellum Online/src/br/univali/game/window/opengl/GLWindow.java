@@ -17,15 +17,15 @@ import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.event.input.MouseEvent;
-import br.univali.game.graphics.opengl.OpenGLRenderer;
+import br.univali.game.graphics.opengl.GLRenderer;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.GameWindow;
 
-public class OpenGLWindow extends GameWindow {
+public class GLWindow extends GameWindow {
 	private long window;
 	private IntVec mousePosition = new IntVec(0, 0);
 	
-	public OpenGLWindow(String title, int width, int height) {
+	public GLWindow(String title, int width, int height) {
 		super(title, width, height);
 		
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -41,7 +41,7 @@ public class OpenGLWindow extends GameWindow {
 		window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
 		GLFW.glfwSetWindowPos(window, mode.width() / 2 - width / 2, mode.height() / 2 - height / 2);
 		
-		renderer = new OpenGLRenderer(window);
+		renderer = new GLRenderer(window);
 		
 		GLFW.glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
 			@Override

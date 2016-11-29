@@ -87,7 +87,7 @@ public class Application {
 			
 			Runnable r;
 			if (modeGroup.getSelection() == server.getModel()) {
-				r = () -> new Game(mode, folder);
+				r = () -> new GameServer(mode, folder);
 			} else {
 				r = () -> new GameClient(mode, folder);
 			}

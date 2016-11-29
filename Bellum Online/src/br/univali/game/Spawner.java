@@ -1,9 +1,11 @@
 package br.univali.game;
 
+import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObject;
+import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.ObjectType;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.objects.Projectile;

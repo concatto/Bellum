@@ -35,9 +35,9 @@ import org.lwjgl.opengl.GL11;
  * @author Kevin Glass
  * @author Brian Matzon
  */
-public class TextureLoader {
+public class GLImageLoader {
     /** The table of textures that have been loaded in this loader */
-    private HashMap<String, Texture> table = new HashMap<>();
+    private HashMap<String, GLTexture> table = new HashMap<>();
 
     /** The colour model including alpha for the GL image */
     private ColorModel glAlphaColorModel;
@@ -50,7 +50,7 @@ public class TextureLoader {
      *
      * @param gl The GL content in which the textures should be loaded
      */
-    public TextureLoader() {
+    public GLImageLoader() {
         glAlphaColorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
                                             new int[] {8,8,8,8}, true, false,
                                             ComponentColorModel.TRANSLUCENT,
@@ -81,8 +81,8 @@ public class TextureLoader {
      * @return The loaded texture
      * @throws IOException Indicates a failure to access the resource
      */
-    public Texture getTexture(String resourceName) throws IOException {
-        Texture tex = (Texture) table.get(resourceName);
+    public GLTexture getTexture(String resourceName) throws IOException {
+        GLTexture tex = (GLTexture) table.get(resourceName);
         
         if (tex != null) {
             return tex;
@@ -111,7 +111,7 @@ public class TextureLoader {
      * @return The loaded texture
      * @throws IOException Indicates a failure to access the resource
      */
-    public Texture getTexture(String resourceName, 
+    public GLTexture getTexture(String resourceName, 
                               int target, 
                               int dstPixelFormat, 
                               int minFilter, 
@@ -122,7 +122,7 @@ public class TextureLoader {
         // create the texture ID for this texture 
 
         int textureID = createTextureID(); 
-        Texture texture = new Texture(target,textureID); 
+        GLTexture texture = new GLTexture(target,textureID); 
         
         // bind this texture 
 
@@ -184,7 +184,7 @@ public class TextureLoader {
      * @param texture The texture to store the data into
      * @return A buffer containing the data
      */
-    private ByteBuffer convertImageData(BufferedImage bufferedImage,Texture texture) { 
+    private ByteBuffer convertImageData(BufferedImage bufferedImage,GLTexture texture) { 
         ByteBuffer imageBuffer = null; 
         WritableRaster raster;
         BufferedImage texImage;
@@ -248,7 +248,7 @@ public class TextureLoader {
      */
     private BufferedImage loadImage(String ref) throws IOException 
     { 
-        URL url = TextureLoader.class.getClassLoader().getResource(ref);
+        URL url = GLImageLoader.class.getClassLoader().getResource(ref);
         
         if (url == null) {
             throw new IOException("Cannot find: "+ref);

@@ -15,7 +15,7 @@ import org.lwjgl.opengl.GL11;
  * @author Kevin Glass
  * @author Brian Matzon
  */
-public class Texture {
+public class GLTexture {
     /** The GL target type */
     private int target; 
     /** The GL texture ID */
@@ -39,7 +39,7 @@ public class Texture {
      * @param target The GL target 
      * @param textureID The GL texture ID
      */
-    public Texture(int target,int textureID) {
+    public GLTexture(int target,int textureID) {
         this.target = target;
         this.textureID = textureID;
     }
