@@ -1,5 +1,6 @@
 package br.univali.game.event.input;
 
+@SuppressWarnings("serial")
 public class KeyboardEvent extends InputEvent {
 	//Códigos de tecla utilizados pelo Swing
 	public static final int LEFT = 37;

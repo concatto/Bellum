@@ -66,6 +66,9 @@ public class GameServer {
 			registry = LocateRegistry.createRegistry(8080);
 			server = new Server(collection, this);
 			
+			server.onStart(() -> serverWindow.publishMessage("Hello world"));
+			server.onKeyboardEvent(event -> serverWindow.publishMessage("Evento de teclado: tipo " + event.getType() + ", tecla " + event.getKey()));
+			
 			registry.bind("server", UnicastRemoteObject.exportObject(server, 8080));
 		} catch (RemoteException | AlreadyBoundException e) {
 			e.printStackTrace();
@@ -172,7 +175,7 @@ public class GameServer {
 				//return true;
 			}
 			
-			animation.updateAnimations(delta);	
+			animation.updateAnimations(delta);
 			lastFrame = time;
 			
 			//exportCollection();

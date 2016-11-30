@@ -10,19 +10,22 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+@SuppressWarnings("serial")
 public class ServerWindow extends JFrame {
 	private JButton close;
 	private JTextArea area;
+	private JScrollPane scrollPane;
 
 	public ServerWindow() {
 		super("Servidor");
 		
 		area = new JTextArea();
 		area.setFont(new Font("Arial", Font.PLAIN, 12));
-		JScrollPane scrollPane = new JScrollPane(area);
+		scrollPane = new JScrollPane(area);
 		
 		JPanel root = new JPanel();
 		
@@ -54,5 +57,8 @@ public class ServerWindow extends JFrame {
 	
 	public void publishMessage(String message) {
 		area.append(message + "\n");
+		
+		JScrollBar vertical = scrollPane.getVerticalScrollBar();
+		vertical.setValue(vertical.getMaximum());
 	}
 }

@@ -1,6 +1,9 @@
 package br.univali.game.event.input;
 
-public abstract class InputEvent {	
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public abstract class InputEvent implements Serializable {	
 	private InputEventType type;
 	
 	public InputEvent(InputEventType type) {

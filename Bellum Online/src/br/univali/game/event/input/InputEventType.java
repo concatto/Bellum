@@ -1,5 +1,7 @@
 package br.univali.game.event.input;
 
-public enum InputEventType {
+import java.io.Serializable;
+
+public enum InputEventType implements Serializable {
 	PRESS, RELEASE
 }

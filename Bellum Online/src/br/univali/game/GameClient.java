@@ -57,6 +57,13 @@ public class GameClient {
 		}
 		
 		window.display();
+		window.onKeyboardEvent(event -> {
+			try {
+				server.publishKeyboardEvent(event);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		});
 		
 		try {
 			server.startGame();
