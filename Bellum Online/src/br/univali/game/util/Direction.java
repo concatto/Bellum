@@ -1,5 +1,6 @@
 package br.univali.game.util;
 
 public enum Direction {
-	LEFT, RIGHT, NONE
+	LEFT, RIGHT, NONE,
+	UP, DOWN
 }

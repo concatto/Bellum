@@ -1,5 +1,6 @@
 package br.univali.game.objects;
 
+@SuppressWarnings("serial")
 public class PlayerTank extends CombatObject {
 	private boolean shielded = false;
 	private boolean poweredUp = false;

@@ -22,25 +22,20 @@ public class TankController extends PlayerController {
 	private Set<MouseButton> pressedButtons = new TreeSet<>();
 	private Set<Integer> pressedKeys = new TreeSet<>();
 	
-	private MouseButton bulletButton;
 	private MouseButton cannonballButton;
 	private int leftKey;
 	private int rightKey;
 	private int shieldKey;
 	
-	private Spawner spawner;
 	private PlayerTank tank;
-	private IntVec windowSize;
 	private DrawableObject shield;
 	private GameObjectCollection collection;
 	
-	private IntVec mousePosition;
-	private long lastBullet = 0;
 	private long lastCannon = 0;
 
-	public TankController(GameObjectCollection collection) {
-		super(collection);
-		tank = collection.getTank();
+	public TankController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
+		super(spawner, collection, windowSize);
+		this.tank = collection.getTank();
 	}
 	
 //	public TankController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {

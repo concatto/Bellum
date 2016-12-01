@@ -3,6 +3,7 @@ package br.univali.game.controllers;
 import java.util.Set;
 import java.util.TreeSet;
 
+import br.univali.game.Spawner;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
@@ -14,16 +15,24 @@ import br.univali.game.util.IntVec;
 public abstract class PlayerController {
 	protected Set<MouseButton> pressedButtons = new TreeSet<>();
 	protected Set<Integer> pressedKeys = new TreeSet<>();
+
+	protected MouseButton bulletButton;
+
+	protected long lastBullet = 0;
 	
 	private int leftKey = 'A';
 	private int rightKey = 'D';
-	
+
+	protected Spawner spawner;
 	protected GameObjectCollection collection;
 	
-	private IntVec mousePosition;
+	protected IntVec mousePosition;
+	protected IntVec windowSize;
 	
-	public PlayerController(GameObjectCollection collection) {
+	public PlayerController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
+		this.spawner = spawner;
 		this.collection = collection;
+		this.windowSize = windowSize;
 	}
 	
 	public void handleKey(KeyboardEvent e) {

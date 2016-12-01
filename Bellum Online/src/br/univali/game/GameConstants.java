@@ -25,8 +25,9 @@ public interface GameConstants {
 	public static final int SPARK_FRAME_TIME = 80;
 	public static final int SHIELD_FRAME_TIME = 30;
 	public static final int SPECIAL_EXPLOSION_FRAME_TIME = 14;
-	
+
 	public static final long BULLET_COOLDOWN = 150;
+	public static final long BULLET_COOLDOWN_HELICOPTER = 75;
 	public static final long CANNON_COOLDOWN = 3000;
 	public static final long SPECIAL_BULLET_COOLDOWN = 200;
 	
