@@ -9,7 +9,7 @@ import br.univali.game.util.IntVec;
 
 public class HelicopterController extends PlayerController {
 
-	private int upKey = 'W';
+	private static final int upKey = 'W';
 	
 	private PlayerHelicopter helicopter;
 	
@@ -21,9 +21,16 @@ public class HelicopterController extends PlayerController {
 	@Override
 	public void update(float delta) {
 		handleMovement();
-		handleWeapons();	
+		handleWeapons();
 	}
 
+	
+	@Override
+	public Direction computeDirection() {
+		boolean up = pressedKeys.contains(upKey);
+		/// ??
+		return super.computeDirection();
+	}
 
 	private void handleWeapons() {
 		long time = System.currentTimeMillis();
@@ -36,12 +43,12 @@ public class HelicopterController extends PlayerController {
 			}
 		}
 	}
-
-	private void handleMovement() {
+	@Override
+	protected void handleMovement() {
 		Direction direction = computeDirection();
 		
 		if (direction == Direction.NONE) {
-			helicopter.setMotionVector(0, 1);
+			helicopter.setMotionVector(0, 0);
 		} else {
 			helicopter.setDirection(direction);
 			float y = helicopter.getMotionVector().y;

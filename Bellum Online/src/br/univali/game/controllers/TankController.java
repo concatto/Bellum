@@ -8,7 +8,6 @@ import br.univali.game.Spawner;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
-import br.univali.game.event.input.MouseEvent;
 import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
@@ -37,14 +36,6 @@ public class TankController extends PlayerController {
 		super(spawner, collection, windowSize);
 		this.tank = collection.getTank();
 	}
-	
-//	public TankController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
-//		super(collection);
-//		this.spawner = spawner;
-//		this.collection = collection;
-//		this.tank = collection.getTank();
-//		this.windowSize = windowSize;
-//	}
 	
 	public void setLeftKey(int leftKey) {
 		this.leftKey = leftKey;
@@ -87,15 +78,6 @@ public class TankController extends PlayerController {
 			return Direction.RIGHT;
 		}
 	}
-
-	public void handleMouse(MouseEvent e) {
-		if (e.getType() == InputEventType.PRESS) {
-			pressedButtons.add(e.getButton());
-		} else {
-			pressedButtons.remove(e.getButton());
-		}
-	}
-	
 	public void setMousePosition(IntVec mousePosition) {
 		this.mousePosition = mousePosition;
 	}
@@ -182,7 +164,8 @@ public class TankController extends PlayerController {
 		}
 	}
 
-	private void handleMovement() {
+	@Override
+	protected void handleMovement() {
 		Direction direction = computeDirection();
 		
 		if (direction == Direction.NONE) {

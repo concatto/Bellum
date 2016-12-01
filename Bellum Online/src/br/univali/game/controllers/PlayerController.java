@@ -65,6 +65,8 @@ public abstract class PlayerController {
 		}
 	}
 	
+	protected abstract void handleMovement();
+	
 	public void setMousePosition(IntVec mousePosition) {
 		this.mousePosition = mousePosition;
 	}

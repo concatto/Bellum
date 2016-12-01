@@ -52,12 +52,14 @@ public class GameServer {
 	private Registry registry = null;
 	private RemoteInterface remoteInterface;
 
+	private GameWindow window;
+
 	public GameServer(RenderMode renderMode, String textureFolder) {
 		serverWindow = new ServerWindow();
 		serverWindow.setOnClose(() -> System.exit(0));
 		serverWindow.setVisible(true);
 		
-		GameWindow window = WindowFactory.createWindow(renderMode, "", 800, 600);
+		window = WindowFactory.createWindow(renderMode, "", 800, 600);
 		renderer = window.getRenderer();
 		textureManager = new TextureManager(renderer, textureFolder);
 		
@@ -136,9 +138,9 @@ public class GameServer {
 		int i = 0;
 		for (Integer id : clients.keySet()) {
 			if (i == tankIndex) {
-				clients.get(id).setController(new TankController(collection));
+				clients.get(id).setController(new TankController(spawner, collection, window.getSize()));
 			} else {
-				clients.get(id).setController(new HelicopterController(collection));
+				clients.get(id).setController(new HelicopterController(spawner, collection, window.getSize()));
 			}
 			
 			i++;
