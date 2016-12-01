@@ -1,4 +1,4 @@
-package br.univali.game;
+package br.univali.game.server;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;

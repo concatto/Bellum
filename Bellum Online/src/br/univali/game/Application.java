@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.UIManager;
 
+import br.univali.game.server.GameServer;
 import br.univali.game.window.RenderMode;
 
 public class Application {

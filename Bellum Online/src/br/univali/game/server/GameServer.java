@@ -1,4 +1,4 @@
-package br.univali.game;
+package br.univali.game.server;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -6,23 +6,37 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import br.univali.game.Client;
+import br.univali.game.Spawner;
 import br.univali.game.controllers.AnimationController;
+import br.univali.game.controllers.HelicopterController;
 import br.univali.game.controllers.LogicController;
 import br.univali.game.controllers.PhysicsController;
 import br.univali.game.controllers.PlayerController;
+import br.univali.game.controllers.TankController;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.RemoteInterface;
-import br.univali.game.remote.Server;
+import br.univali.game.remote.RemoteInterfaceImpl;
 import br.univali.game.window.GameWindow;
 import br.univali.game.window.RenderMode;
 import br.univali.game.window.WindowFactory;
 
 public class GameServer {
+	private static int currentId = 0; 
+	
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private ServerWindow serverWindow;
 	private Renderer renderer;
 	private TextureManager textureManager;
@@ -32,11 +46,11 @@ public class GameServer {
 	private AnimationController animation;
 	private boolean running;
 	private long lastFrame;
-	private PlayerController player;
 	private Spawner spawner;
 	
+	private Map<Integer, Client> clients = new HashMap<>();
 	private Registry registry = null;
-	private RemoteInterface server;
+	private RemoteInterface remoteInterface;
 
 	public GameServer(RenderMode renderMode, String textureFolder) {
 		serverWindow = new ServerWindow();
@@ -61,85 +75,89 @@ public class GameServer {
 		spawner = new Spawner(textureManager, collection);
 		serverWindow.publishMessage("Managers created.");
 		
-		
 		try {
 			registry = LocateRegistry.createRegistry(8080);
-			server = new Server(collection, this);
+			remoteInterface = new RemoteInterfaceImpl(collection, () -> {
+				int id = handleClientConnection();
+				
+				if (clients.size() == 1) {
+					beginExecution();
+				}
+				
+				return id;
+			});
 			
-			server.onStart(() -> serverWindow.publishMessage("Hello world"));
-			server.onKeyboardEvent(event -> serverWindow.publishMessage("Evento de teclado: tipo " + event.getType() + ", tecla " + event.getKey()));
+			remoteInterface.onStart(() -> serverWindow.publishMessage("Hello world"));
+			remoteInterface.onKeyboardEvent(event -> {
+				serverWindow.publishMessage("Evento de teclado: tipo " + event.getType() + ", tecla " + event.getKey());
+			});
 			
-			registry.bind("server", UnicastRemoteObject.exportObject(server, 8080));
+			registry.bind("server", UnicastRemoteObject.exportObject(remoteInterface, 8080));
 		} catch (RemoteException | AlreadyBoundException e) {
 			e.printStackTrace();
 		}
 		
-		
 		spawner.spawnTank();
 		
-		serverWindow.publishMessage("Creating controllers...");
-		player = new PlayerController(spawner, collection, window.getSize());
-		player.setBulletButton(MouseButton.RIGHT);
-		player.setCannonballButton(MouseButton.LEFT);
-		player.setLeftKey('A');
-		player.setRightKey('D');
-		player.setShieldKey(KeyboardEvent.SPACE);
+		serverWindow.publishMessage("Creating controllers...");		
 		
 		logic = new LogicController(collection, spawner, window.getSize());
 		physics = new PhysicsController(collection, logic.getGroundLevel());
 		animation = new AnimationController(collection, textureManager);	
 		serverWindow.publishMessage("Controllers created.");
 		
-		running = true;
-		
-		while (running) {
-			logic.prepareGame();
+//		running = true;
+//		
+//		while (running) {
+//			logic.prepareGame();
+//	
+//			serverWindow.publishMessage("Displaying menu...");
+//			beginMenu();
+//			serverWindow.publishMessage("Done.");
+//			
+//			serverWindow.publishMessage("Beginning main loop...");
+//			boolean dead = beginMainLoop();
+//			
+//			if (dead) {
+//				displayDeathScreen();
+//			}
+//			
+//			try {
+//				collection.clear();
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
+//		}
+	}
 	
-			serverWindow.publishMessage("Displaying menu...");
-			beginMenu();
-			serverWindow.publishMessage("Done.");
-			
-			serverWindow.publishMessage("Beginning main loop...");
-			boolean dead = beginMainLoop();
-			
-			if (dead) {
-				displayDeathScreen();
+	private void beginExecution() {
+		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
+		
+		int i = 0;
+		for (Integer id : clients.keySet()) {
+			if (i == tankIndex) {
+				clients.get(id).setController(new TankController(collection));
+			} else {
+				clients.get(id).setController(new HelicopterController(collection));
 			}
 			
-			try {
-				collection.clear();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			i++;
 		}
+		
+		
+		executor.submit(() -> {
+			running = true;
+			
+			while (running) {
+				beginMainLoop();
+			}
+		});
 	}
 
-	private void displayDeathScreen() {
-//		menu.prepareToDie();
-//		
-//		do {
-//			drawGame();
-//			menu.drawYouDied(renderer);
-//			renderer.draw();
-//			
-//		} while (!menu.didClick());
-	}
-	
-	private void beginMenu() {
-//		window.display();
-		
-		try {
-			boolean notReady = true;
-			do {
-//				drawGame();
-//				menu.drawGameMenu(renderer);
-//				renderer.draw();
-				notReady = !server.shouldStart();
-				Thread.sleep(100);
-			} while (notReady);
-		} catch (RemoteException | InterruptedException e) {
-			e.printStackTrace();
-		}
+	private int handleClientConnection() {
+		int id = currentId++;
+		clients.put(id, new Client(id));
+		return id;
 	}
 	
 	/**
@@ -148,7 +166,7 @@ public class GameServer {
 	 */
 	public boolean beginMainLoop() {
 		lastFrame = System.nanoTime();
-		player.resetFlags();
+		//clients.get(0).resetFlags();
 		
 		while (running) {		
 			long time = System.nanoTime();
@@ -162,7 +180,6 @@ public class GameServer {
 			logic.tryGenerateHealth();
 			logic.tryGenerateSpecial();
 			
-			player.updateTank(delta);
 			logic.updateEnemies(delta);
 			physics.updatePositions(delta);
 			

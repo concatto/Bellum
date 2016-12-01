@@ -2,22 +2,21 @@ package br.univali.game.remote;
 
 import java.rmi.RemoteException;
 
-import br.univali.game.GameServer;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
 import br.univali.game.objects.GameObjectCollection;
 
-public class Server implements RemoteInterface {
+public class RemoteInterfaceImpl implements RemoteInterface {
 	private GameObjectCollection collection;
-	private GameServer game;
 	private boolean startRequested = false;
 	private RemoteCallback startCallback;
 	private RemoteConsumer<KeyboardEvent> keyboardConsumer;
 	private RemoteConsumer<MouseEvent> mouseConsumer;
+	private RemoteCallable<Integer> connectionCallback;
 	
-	public Server(GameObjectCollection collection, GameServer game) {
+	public RemoteInterfaceImpl(GameObjectCollection collection, RemoteCallable<Integer> connectionCallback) {
 		this.collection = collection;
-		this.game = game;
+		this.connectionCallback = connectionCallback;
 	}
 
 	@Override
@@ -63,5 +62,10 @@ public class Server implements RemoteInterface {
 		if (mouseConsumer != null) {
 			mouseConsumer.execute(event);
 		}
+	}
+
+	@Override
+	public int connectToServer() throws RemoteException {
+		return connectionCallback.execute();
 	}
 }

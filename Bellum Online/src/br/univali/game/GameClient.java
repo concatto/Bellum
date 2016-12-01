@@ -66,6 +66,7 @@ public class GameClient {
 		});
 		
 		try {
+			System.out.println("My id is " + server.connectToServer());
 			server.startGame();
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -91,6 +92,10 @@ public class GameClient {
 		while (true) {
 			drawGame();
 			renderer.draw();
+			
+			if (collection.getTank().getHealth() <= 0) {
+				
+			}
 		}
 	}
 	
