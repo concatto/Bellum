@@ -40,10 +40,16 @@ public class GLImageLoader {
     private HashMap<String, GLTexture> table = new HashMap<>();
 
     /** The colour model including alpha for the GL image */
-    private ColorModel glAlphaColorModel;
+    private static ColorModel glAlphaColorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+															            new int[] {8,8,8,8}, true, false,
+															            ComponentColorModel.TRANSLUCENT,
+															            DataBuffer.TYPE_BYTE);
     
     /** The colour model for the GL image */
-    private ColorModel glColorModel;
+    private static ColorModel glColorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+															            new int[] {8,8,8,0}, false, false,
+															            ComponentColorModel.OPAQUE,
+															            DataBuffer.TYPE_BYTE);
     
     /** 
      * Create a new texture loader based on the game panel
@@ -51,15 +57,7 @@ public class GLImageLoader {
      * @param gl The GL content in which the textures should be loaded
      */
     public GLImageLoader() {
-        glAlphaColorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                                            new int[] {8,8,8,8}, true, false,
-                                            ComponentColorModel.TRANSLUCENT,
-                                            DataBuffer.TYPE_BYTE);
-                                            
-        glColorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                                            new int[] {8,8,8,0}, false, false,
-                                            ComponentColorModel.OPAQUE,
-                                            DataBuffer.TYPE_BYTE);
+
     }
     
     /**
@@ -67,7 +65,7 @@ public class GLImageLoader {
      *
      * @return A new texture ID
      */
-    private int createTextureID() 
+    public static int createTextureID() 
     { 
        IntBuffer tmp = createIntBuffer(1); 
        GL11.glGenTextures(tmp); 
@@ -88,11 +86,7 @@ public class GLImageLoader {
             return tex;
         }
         
-        tex = getTexture(resourceName,
-                         GL11.GL_TEXTURE_2D, // target
-                         GL11.GL_RGBA,     // dst pixel format
-                         GL11.GL_LINEAR, // min filter (unused)
-                         GL11.GL_LINEAR);
+        tex = fromBufferedImage(loadImage(resourceName));
         
         table.put(resourceName,tex);
         
@@ -100,24 +94,22 @@ public class GLImageLoader {
     }
     
     /**
-     * Load a texture into OpenGL from a image reference on
-     * disk.
-     *
-     * @param resourceName The location of the resource to load
-     * @param target The GL target to load the texture against
-     * @param dstPixelFormat The pixel format of the screen
-     * @param minFilter The minimising filter
-     * @param magFilter The magnification filter
-     * @return The loaded texture
-     * @throws IOException Indicates a failure to access the resource
+     * Get the closest greater power of 2 to the fold number
+     * 
+     * @param fold The target number
+     * @return The power of 2
      */
-    public GLTexture getTexture(String resourceName, 
-                              int target, 
-                              int dstPixelFormat, 
-                              int minFilter, 
-                              int magFilter) throws IOException 
-    { 
-        int srcPixelFormat = 0;
+    private static int get2Fold(int fold) {
+        int ret = 2;
+        while (ret < fold) {
+            ret *= 2;
+        }
+        return ret;
+    } 
+    
+    public static GLTexture fromBufferedImage(BufferedImage bufferedImage) {
+    	int target = GL11.GL_TEXTURE_2D;
+    	int srcPixelFormat = 0;
         
         // create the texture ID for this texture 
 
@@ -128,7 +120,6 @@ public class GLImageLoader {
 
         GL11.glBindTexture(target, textureID); 
  
-        BufferedImage bufferedImage = loadImage(resourceName); 
         texture.setWidth(bufferedImage.getWidth());
         texture.setHeight(bufferedImage.getHeight());
         
@@ -144,15 +135,15 @@ public class GLImageLoader {
         
         if (target == GL11.GL_TEXTURE_2D) 
         { 
-            GL11.glTexParameteri(target, GL11.GL_TEXTURE_MIN_FILTER, minFilter); 
-            GL11.glTexParameteri(target, GL11.GL_TEXTURE_MAG_FILTER, magFilter); 
+            GL11.glTexParameteri(target, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR); 
+            GL11.glTexParameteri(target, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR); 
         } 
  
         // produce a texture from the byte buffer
 
         GL11.glTexImage2D(target, 
                       0, 
-                      dstPixelFormat, 
+                      GL11.GL_RGBA, 
                       get2Fold(bufferedImage.getWidth()), 
                       get2Fold(bufferedImage.getHeight()), 
                       0, 
@@ -161,21 +152,7 @@ public class GLImageLoader {
                       textureBuffer ); 
         
         return texture; 
-    } 
-    
-    /**
-     * Get the closest greater power of 2 to the fold number
-     * 
-     * @param fold The target number
-     * @return The power of 2
-     */
-    private int get2Fold(int fold) {
-        int ret = 2;
-        while (ret < fold) {
-            ret *= 2;
-        }
-        return ret;
-    } 
+    }
     
     /**
      * Convert the buffered image to a texture
@@ -184,7 +161,7 @@ public class GLImageLoader {
      * @param texture The texture to store the data into
      * @return A buffer containing the data
      */
-    private ByteBuffer convertImageData(BufferedImage bufferedImage,GLTexture texture) { 
+    public static ByteBuffer convertImageData(BufferedImage bufferedImage, GLTexture texture) { 
         ByteBuffer imageBuffer = null; 
         WritableRaster raster;
         BufferedImage texImage;
@@ -266,10 +243,10 @@ public class GLImageLoader {
      * @param size how many int to contain
      * @return created IntBuffer
      */
-    protected IntBuffer createIntBuffer(int size) {
+    public static IntBuffer createIntBuffer(int size) {
       ByteBuffer temp = ByteBuffer.allocateDirect(4 * size);
       temp.order(ByteOrder.nativeOrder());
 
       return temp.asIntBuffer();
-    }    
+    }  
 }

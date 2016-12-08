@@ -148,12 +148,15 @@ public class GLRenderer implements Renderer {
 	
 	@Override
 	public void drawImage(int image, float x, float y, float alpha) {
+		drawImageFromTexture(textureList.get(image), x, y, alpha);
+	}
+	
+	public void drawImageFromTexture(GLTexture tex, float x, float y, float alpha) {
 		glEnable(GL_BLEND); 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_TEXTURE_2D);
 		glPushMatrix();
 		
-		GLTexture tex = textureList.get(image);
 		tex.bind();
 		
 		applyTransforms(x, y, tex.getImageWidth(), tex.getImageHeight());

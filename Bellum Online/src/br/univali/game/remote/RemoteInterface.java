@@ -1,6 +1,7 @@
 package br.univali.game.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.function.Consumer;
 
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
@@ -13,9 +14,9 @@ public interface RemoteInterface extends Remote {
 	
 	int connectToServer() throws RemoteException;
 	
-	void onStart(RemoteCallback callback) throws RemoteException;
-	void onKeyboardEvent(RemoteConsumer<KeyboardEvent> consumer) throws RemoteException;
-	void onMouseEvent(RemoteConsumer<MouseEvent> consumer) throws RemoteException;
+	void onStart(Runnable runnable) throws RemoteException;
+	void onKeyboardEvent(Consumer<KeyboardEvent> consumer) throws RemoteException;
+	void onMouseEvent(Consumer<MouseEvent> consumer) throws RemoteException;
 	
 	void publishKeyboardEvent(KeyboardEvent event) throws RemoteException;
 	void publishMouseEvent(MouseEvent event) throws RemoteException;

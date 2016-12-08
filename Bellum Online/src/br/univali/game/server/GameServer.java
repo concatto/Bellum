@@ -1,5 +1,7 @@
 package br.univali.game.server;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -26,6 +28,8 @@ import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.TextureManager;
+import br.univali.game.graphics.opengl.GLRenderer;
+import br.univali.game.graphics.opengl.TrueTypeFont;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
@@ -107,6 +111,18 @@ public class GameServer {
 		physics = new PhysicsController(collection, logic.getGroundLevel());
 		animation = new AnimationController(collection, textureManager);	
 		serverWindow.publishMessage("Controllers created.");
+		
+		window.display();
+		Renderer renderer = window.getRenderer();
+		TrueTypeFont font = new TrueTypeFont(new Font("Arial", Font.PLAIN, 32), true);
+		
+		while (true) {
+			renderer.setColor(0.5f, 0.5f, 0.5f);
+			renderer.clear();
+			renderer.setColor(0, 0, 0);
+			font.drawString("Hello", 0, 0, Color.BLACK, (GLRenderer) renderer);
+			renderer.draw();
+		}
 		
 //		running = true;
 //		

@@ -1,6 +1,8 @@
 package br.univali.game.remote;
 
 import java.rmi.RemoteException;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
@@ -9,14 +11,14 @@ import br.univali.game.objects.GameObjectCollection;
 public class RemoteInterfaceImpl implements RemoteInterface {
 	private GameObjectCollection collection;
 	private boolean startRequested = false;
-	private RemoteCallback startCallback;
-	private RemoteConsumer<KeyboardEvent> keyboardConsumer;
-	private RemoteConsumer<MouseEvent> mouseConsumer;
-	private RemoteCallable<Integer> connectionCallback;
+	private Runnable startAction;
+	private Consumer<KeyboardEvent> keyboardConsumer;
+	private Consumer<MouseEvent> mouseConsumer;
+	private Callable<Integer> connectionCallable;
 	
-	public RemoteInterfaceImpl(GameObjectCollection collection, RemoteCallable<Integer> connectionCallback) {
+	public RemoteInterfaceImpl(GameObjectCollection collection, Callable<Integer> connectionCallable) {
 		this.collection = collection;
-		this.connectionCallback = connectionCallback;
+		this.connectionCallable = connectionCallable;
 	}
 
 	@Override
@@ -27,7 +29,7 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 	@Override
 	public void startGame() throws RemoteException {
 		startRequested = true;
-		startCallback.execute();
+		startAction.run();
 	}
 	
 	@Override
@@ -36,36 +38,40 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 	}
 
 	@Override
-	public void onStart(RemoteCallback callback) throws RemoteException {
-		startCallback = callback;
+	public void onStart(Runnable action) throws RemoteException {
+		startAction = action;
 	}
 
 	@Override
-	public void onKeyboardEvent(RemoteConsumer<KeyboardEvent> consumer) throws RemoteException {
+	public void onKeyboardEvent(Consumer<KeyboardEvent> consumer) throws RemoteException {
 		keyboardConsumer = consumer;
 	}
 
 	@Override
-	public void onMouseEvent(RemoteConsumer<MouseEvent> consumer) throws RemoteException {
+	public void onMouseEvent(Consumer<MouseEvent> consumer) throws RemoteException {
 		mouseConsumer = consumer;
 	}
 
 	@Override
 	public void publishKeyboardEvent(KeyboardEvent event) throws RemoteException {
 		if (keyboardConsumer != null) {
-			keyboardConsumer.execute(event);
+			keyboardConsumer.accept(event);
 		}
 	}
 
 	@Override
 	public void publishMouseEvent(MouseEvent event) throws RemoteException {
 		if (mouseConsumer != null) {
-			mouseConsumer.execute(event);
+			mouseConsumer.accept(event);
 		}
 	}
 
 	@Override
 	public int connectToServer() throws RemoteException {
-		return connectionCallback.execute();
+		try {
+			return connectionCallable.call();
+		} catch (Exception e) {
+			throw new RemoteException("Connection callable failed to execute");
+		}
 	}
 }
