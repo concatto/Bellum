@@ -16,7 +16,7 @@ public abstract class PlayerController {
 	protected Set<MouseButton> pressedButtons = new TreeSet<>();
 	protected Set<Integer> pressedKeys = new TreeSet<>();
 
-	protected MouseButton bulletButton;
+	protected MouseButton bulletButton = MouseButton.LEFT;
 
 	protected long lastBullet = 0;
 	
@@ -58,6 +58,7 @@ public abstract class PlayerController {
 	}
 
 	public void handleMouse(MouseEvent e) {
+		System.out.println("Hi");
 		if (e.getType() == InputEventType.PRESS) {
 			pressedButtons.add(e.getButton());
 		} else {

@@ -1,7 +1,6 @@
 package br.univali.game.controllers;
 
 import java.util.Set;
-import java.util.TreeSet;
 
 import br.univali.game.GameConstants;
 import br.univali.game.Spawner;
@@ -17,14 +16,11 @@ import br.univali.game.util.Geometry;
 import br.univali.game.util.IntVec;
 import br.univali.game.util.Utils;
 
-public class TankController extends PlayerController {
-	private Set<MouseButton> pressedButtons = new TreeSet<>();
-	private Set<Integer> pressedKeys = new TreeSet<>();
-	
-	private MouseButton cannonballButton;
-	private int leftKey;
-	private int rightKey;
-	private int shieldKey;
+public class TankController extends PlayerController {	
+	private MouseButton cannonballButton = MouseButton.RIGHT;
+	private int leftKey = 'A';
+	private int rightKey = 'D';
+	private int shieldKey = KeyboardEvent.SPACE;
 	
 	private PlayerTank tank;
 	private DrawableObject shield;
@@ -104,6 +100,7 @@ public class TankController extends PlayerController {
 	private void handleWeapons() {
 		long time = System.currentTimeMillis();
 		
+		//System.out.println(pressedButtons.contains(bulletButton));
 		if (pressedButtons.contains(bulletButton)) {
 			long difference = time - lastBullet;
 			if (tank.isPoweredUp() && difference > GameConstants.SPECIAL_BULLET_COOLDOWN) {

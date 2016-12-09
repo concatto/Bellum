@@ -1,6 +1,5 @@
 package br.univali.game.server;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -9,28 +8,21 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import br.univali.game.Client;
 import br.univali.game.Spawner;
 import br.univali.game.controllers.AnimationController;
 import br.univali.game.controllers.HelicopterController;
 import br.univali.game.controllers.LogicController;
 import br.univali.game.controllers.PhysicsController;
-import br.univali.game.controllers.PlayerController;
 import br.univali.game.controllers.TankController;
-import br.univali.game.event.input.KeyboardEvent;
-import br.univali.game.event.input.MouseButton;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.TextureManager;
-import br.univali.game.graphics.opengl.GLRenderer;
-import br.univali.game.graphics.opengl.TrueTypeFont;
 import br.univali.game.objects.GameObjectCollection;
+import br.univali.game.remote.GameConnection;
+import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
 import br.univali.game.window.GameWindow;
@@ -52,7 +44,7 @@ public class GameServer {
 	private long lastFrame;
 	private Spawner spawner;
 	
-	private Map<Integer, Client> clients = new HashMap<>();
+	private List<Client> clients = new ArrayList<>();
 	private Registry registry = null;
 	private RemoteInterface remoteInterface;
 
@@ -84,13 +76,14 @@ public class GameServer {
 		try {
 			registry = LocateRegistry.createRegistry(8080);
 			remoteInterface = new RemoteInterfaceImpl(collection, () -> {
-				int id = handleClientConnection();
+				GameConnection conn = new GameConnectionImpl();
+				clients.add(new Client((GameConnectionImpl) conn));
 				
 				if (clients.size() == 1) {
 					beginExecution();
 				}
 				
-				return id;
+				return conn;
 			});
 			
 			remoteInterface.onStart(() -> serverWindow.publishMessage("Hello world"));
@@ -115,14 +108,14 @@ public class GameServer {
 		window.display();
 		Renderer renderer = window.getRenderer();
 		
-		while (true) {
-			renderer.setColor(0.5f, 0.5f, 0.5f);
-			renderer.clear();
-			renderer.setColor(0, 1, 0);
-			renderer.setFont(new Font("Arial", Font.PLAIN, 32));
-			renderer.drawText("Hello", 0, 0);
-			renderer.draw();
-		}
+//		while (true) {
+//			renderer.setColor(0.5f, 0.5f, 0.5f);
+//			renderer.clear();
+//			renderer.setColor(0, 1, 0);
+//			renderer.setFont(new Font("Arial", Font.PLAIN, 32));
+//			renderer.drawText("Hello", 0, 0);
+//			renderer.draw();
+//		}
 		
 //		running = true;
 //		
@@ -151,17 +144,17 @@ public class GameServer {
 	private void beginExecution() {
 		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
 		
-		int i = 0;
-		for (Integer id : clients.keySet()) {
+		for (int i = 0; i < clients.size(); i++) {		
+			Client conn = clients.get(i);
+			
 			if (i == tankIndex) {
-				clients.get(id).setController(new TankController(spawner, collection, window.getSize()));
+				conn.setController(new TankController(spawner, collection, window.getSize()));
 			} else {
-				clients.get(id).setController(new HelicopterController(spawner, collection, window.getSize()));
+				conn.setController(new HelicopterController(spawner, collection, window.getSize()));
 			}
 			
 			i++;
 		}
-		
 		
 		executor.submit(() -> {
 			running = true;
@@ -171,12 +164,6 @@ public class GameServer {
 			}
 		});
 	}
-
-	private int handleClientConnection() {
-		int id = currentId++;
-		clients.put(id, new Client(id));
-		return id;
-	}
 	
 	/**
 	 * Inicia o loop principal do jogo.
@@ -184,7 +171,6 @@ public class GameServer {
 	 */
 	public boolean beginMainLoop() {
 		lastFrame = System.nanoTime();
-		//clients.get(0).resetFlags();
 		
 		while (running) {		
 			long time = System.nanoTime();
@@ -197,6 +183,14 @@ public class GameServer {
 			logic.tryGenerateEnemy();
 			logic.tryGenerateHealth();
 			logic.tryGenerateSpecial();
+			
+			for (Client c : clients) {
+				try {
+					c.getController().update(delta);
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
 			
 			logic.updateEnemies(delta);
 			physics.updatePositions(delta);

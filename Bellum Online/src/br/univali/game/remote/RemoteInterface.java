@@ -12,12 +12,9 @@ public interface RemoteInterface extends Remote {
 	void startGame() throws RemoteException;
 	boolean shouldStart() throws RemoteException;
 	
-	int connectToServer() throws RemoteException;
+	GameConnection connectToServer() throws RemoteException;
 	
 	void onStart(Runnable runnable) throws RemoteException;
 	void onKeyboardEvent(Consumer<KeyboardEvent> consumer) throws RemoteException;
 	void onMouseEvent(Consumer<MouseEvent> consumer) throws RemoteException;
-	
-	void publishKeyboardEvent(KeyboardEvent event) throws RemoteException;
-	void publishMouseEvent(MouseEvent event) throws RemoteException;
 }

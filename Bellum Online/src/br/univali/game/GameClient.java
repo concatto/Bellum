@@ -11,6 +11,7 @@ import br.univali.game.controllers.HUDController;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.GameObjectCollection;
+import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.window.GameWindow;
 import br.univali.game.window.RenderMode;
@@ -23,6 +24,7 @@ public class GameClient {
 	private HUDController hud;
 	private DrawingController drawing;
 	private RemoteInterface server;
+	private GameConnection connection;
 	private GameObjectCollection collection;
 	
 	public GameClient(RenderMode renderMode, String textureFolder) {
@@ -56,26 +58,38 @@ public class GameClient {
 			e.printStackTrace();
 		}
 		
-		window.display();
-		window.onKeyboardEvent(event -> {
-			try {
-				server.publishKeyboardEvent(event);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		});
-		
 		try {
-			System.out.println("My id is " + server.connectToServer());
-			server.startGame();
+			connection = server.connectToServer();
+			window.display();
+			
+			window.onKeyboardEvent(event -> { 
+				try {
+					connection.publishKeyboardEvent(event);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			});
+			
+			window.onMouseEvent(event -> { 
+				try {
+					System.out.println("Publishing");
+					connection.publishMouseEvent(event);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			});			
+			
 		} catch (RemoteException e) {
 			e.printStackTrace();
+			return;
 		}
 		
 		new Thread(() -> {
 			while (true) {
 				long start = System.currentTimeMillis();
 				try {
+					connection.publishMousePosition(window.getMousePosition());
+					
 					collection = server.getGameObjectCollection();
 					drawing.setCollection(collection);
 					hud.setCollection(collection);
@@ -85,11 +99,11 @@ public class GameClient {
 					e1.printStackTrace();
 				}
 				
-				System.out.println("Took " + (System.currentTimeMillis() - start));
+				//System.out.println("Took " + (System.currentTimeMillis() - start));
 			}
 		}).start();
 		
-		while (true) {
+		while (true) {			
 			drawGame();
 			renderer.draw();
 			

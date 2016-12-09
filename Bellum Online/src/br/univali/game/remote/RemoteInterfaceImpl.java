@@ -1,6 +1,7 @@
 package br.univali.game.remote;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -14,9 +15,9 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 	private Runnable startAction;
 	private Consumer<KeyboardEvent> keyboardConsumer;
 	private Consumer<MouseEvent> mouseConsumer;
-	private Callable<Integer> connectionCallable;
+	private Callable<GameConnection> connectionCallable;
 	
-	public RemoteInterfaceImpl(GameObjectCollection collection, Callable<Integer> connectionCallable) {
+	public RemoteInterfaceImpl(GameObjectCollection collection, Callable<GameConnection> connectionCallable) {
 		this.collection = collection;
 		this.connectionCallable = connectionCallable;
 	}
@@ -52,24 +53,24 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 		mouseConsumer = consumer;
 	}
 
-	@Override
-	public void publishKeyboardEvent(KeyboardEvent event) throws RemoteException {
-		if (keyboardConsumer != null) {
-			keyboardConsumer.accept(event);
-		}
-	}
+//	@Override
+//	public void publishKeyboardEvent(KeyboardEvent event) throws RemoteException {
+//		if (keyboardConsumer != null) {
+//			keyboardConsumer.accept(event);
+//		}
+//	}
+//
+//	@Override
+//	public void publishMouseEvent(MouseEvent event) throws RemoteException {
+//		if (mouseConsumer != null) {
+//			mouseConsumer.accept(event);
+//		}
+//	}
 
 	@Override
-	public void publishMouseEvent(MouseEvent event) throws RemoteException {
-		if (mouseConsumer != null) {
-			mouseConsumer.accept(event);
-		}
-	}
-
-	@Override
-	public int connectToServer() throws RemoteException {
+	public GameConnection connectToServer() throws RemoteException {
 		try {
-			return connectionCallable.call();
+			return (GameConnection) UnicastRemoteObject.exportObject(connectionCallable.call(), 8080);
 		} catch (Exception e) {
 			throw new RemoteException("Connection callable failed to execute");
 		}

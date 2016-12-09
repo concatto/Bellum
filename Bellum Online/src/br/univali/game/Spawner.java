@@ -96,15 +96,15 @@ public class Spawner {
 		
 		CombatObject tank = collection.getTank();
 		boolean hostile = source != tank;
-		if (!hostile) {
-			if (theta > 0 && theta < (Math.PI / 2)) {
-				//Se o ângulo está no quadrante inferior direito
-				theta = 0;
-			} else if (theta > (Math.PI / 2) || theta < -Math.PI) {
-				//Se o ângulo está no quadrante inferior esquerdo
-				theta = (float) -Math.PI;
-			}
-		}
+//		if (!hostile) {
+//			if (theta > 0 && theta < (Math.PI / 2)) {
+//				//Se o ângulo está no quadrante inferior direito
+//				theta = 0;
+//			} else if (theta > (Math.PI / 2) || theta < -Math.PI) {
+//				//Se o ângulo está no quadrante inferior esquerdo
+//				theta = (float) -Math.PI;
+//			}
+//		}
 		
 		Projectile p = new Projectile();
 		prepareObject(p, type);
