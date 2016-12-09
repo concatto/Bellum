@@ -1,5 +1,6 @@
 package br.univali.game.graphics;
 
+import java.awt.Font;
 import java.io.IOException;
 
 import br.univali.game.util.FloatVec;
@@ -18,6 +19,8 @@ public interface Renderer {
 	void drawImage(int image, float x, float y);
 	void drawImage(int image, float x, float y, float alpha);
 	void drawSubImage(int image, float x, float y, IntRect rect);
+	void setFont(Font font);
+	void drawText(String text, float x, float y);
 	IntVec getImageSize(int image);
 	void setScale(FloatVec scale);
 	void setRotation(float radians);

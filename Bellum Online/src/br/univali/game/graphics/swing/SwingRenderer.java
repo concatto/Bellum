@@ -3,6 +3,7 @@ package br.univali.game.graphics.swing;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -155,5 +156,16 @@ public class SwingRenderer implements Renderer {
 	public IntVec getImageSize(int image) {
 		BufferedImage img = images.get(image);
 		return new IntVec(img.getWidth(), img.getHeight());
+	}
+
+	@Override
+	public void setFont(Font font) {
+		graphics.setFont(font);
+	}
+
+	@Override
+	public void drawText(String text, float x, float y) {
+		applyTransforms(0, 0, 0, 0);
+		graphics.drawString(text, 0, graphics.getFontMetrics().getAscent());
 	}
 }

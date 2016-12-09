@@ -26,9 +26,12 @@ import static org.lwjgl.opengl.GL11.glTexCoord2f;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
+import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -45,6 +48,8 @@ public class GLRenderer implements Renderer {
 	private FloatVec scale;
 	private GLImageLoader textureLoader = new GLImageLoader();
 	private List<GLTexture> textureList = new ArrayList<>();
+	private Map<Font, TrueTypeFont> fonts = new HashMap<>();
+	private TrueTypeFont currentFont = null;
 	
 	public GLRenderer(long window) {
 		this.window = window;
@@ -245,5 +250,25 @@ public class GLRenderer implements Renderer {
 	@Override
 	public void setScale(FloatVec scale) {
 		this.scale = scale; 
+	}
+
+	@Override
+	public void setFont(Font font) {
+		if (fonts.containsKey(font)) {
+			currentFont = fonts.get(font);
+		} else {
+			TrueTypeFont ttf = new TrueTypeFont(font);
+			fonts.put(font, ttf);
+			currentFont = ttf;
+		}
+	}
+
+	@Override
+	public void drawText(String text, float x, float y) {
+		if (currentFont == null) {
+			throw new RuntimeException("No font specified");
+		}
+		
+		currentFont.drawString(text, x, y, this);
 	}
 }

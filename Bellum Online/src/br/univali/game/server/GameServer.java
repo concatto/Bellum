@@ -114,13 +114,13 @@ public class GameServer {
 		
 		window.display();
 		Renderer renderer = window.getRenderer();
-		TrueTypeFont font = new TrueTypeFont(new Font("Arial", Font.PLAIN, 32), true);
 		
 		while (true) {
 			renderer.setColor(0.5f, 0.5f, 0.5f);
 			renderer.clear();
-			renderer.setColor(0, 0, 0);
-			font.drawString("Hello", 0, 0, Color.BLACK, (GLRenderer) renderer);
+			renderer.setColor(0, 1, 0);
+			renderer.setFont(new Font("Arial", Font.PLAIN, 32));
+			renderer.drawText("Hello", 0, 0);
 			renderer.draw();
 		}
 		

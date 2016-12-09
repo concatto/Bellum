@@ -75,7 +75,7 @@ public class TrueTypeFont
 
     public TrueTypeFont(Font fnt)
     {
-        this(fnt, true);
+        this(fnt, false);
     }
 
     public TrueTypeFont(Font fnt, boolean antiAlias)
@@ -145,7 +145,7 @@ public class TrueTypeFont
         g2d = pageImage.createGraphics();
 
         g2d.setFont(awtFont);
-        g2d.setColor(java.awt.Color.BLACK);
+        g2d.setColor(java.awt.Color.WHITE);
 
         if (antiAlias)
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -173,7 +173,7 @@ public class TrueTypeFont
                 g2d = pageImage.createGraphics();
 
                 g2d.setFont(awtFont);
-                g2d.setColor(java.awt.Color.BLACK);
+                g2d.setColor(java.awt.Color.WHITE);
 
                 if (antiAlias)
                     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -216,24 +216,18 @@ public class TrueTypeFont
 		}
     }
 
-    public void drawString(String text, float x, float y, Color col, GLRenderer renderer)
+    public void drawString(String text, float x, float y, GLRenderer renderer)
     {
-    	//renderer.drawImageFromTexture(fontTexture[2], x, y, 1);
-    	
     	GL11.glEnable(GL_BLEND); 
-    	GL11.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    	GL11.glBlendFunc(GL11.GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glEnable(GL_TEXTURE_2D);
 		GL11.glPushMatrix();
-		GLTexture charPage = fontTexture[2];
-        charPage.bind();
-		
-        GL11.glBegin(GL11.GL_QUADS);
-        {
+
             float startX = x;
 
+            GLTexture charPage = null;
             GLTexture page = null;
 
-            text = "pp";
             for (char ch : text.toCharArray()) {
                 FontChar c = chars[(int) ch];
 
@@ -245,56 +239,45 @@ public class TrueTypeFont
                     continue;
                 }
 
-                //GLTexture charPage = fontTexture[chars[ch].page];
-
+                charPage = fontTexture[chars[ch].page];
+                
                 if (page == null || page != charPage)
                 {
                     page = charPage;
-                    //page.bind();
+                    page.bind();
                 }
                 
-            	System.out.println(c.w + ", " + c.h);
+                GL11.glBegin(GL11.GL_QUADS);
+                
 
                 float minU = c.x / (float) page.getImageWidth();
                 float maxU = (c.x + c.w) / (float) page.getImageWidth();
                 float minV = c.y / (float) page.getImageHeight();
                 float maxV = (c.y + c.h) / (float) page.getImageHeight();
                 
-                GL11.glVertex2f(x + 0, 0);
-                //GL11.glColor4f(col.getRed(), col.getGreen(), col.getBlue(), 1);
-                GL11.glTexCoord2f(minU, minV);
-                GL11.glVertex2f(x + 0, c.h * 2);
-                //GL11.glColor4f(col.getRed(), col.getGreen(), col.getBlue(), 1);
-                GL11.glTexCoord2f(minU, maxV);
+                //System.out.println("x = " + c.x + ", y = " + c.y + ", w = " + c.w + ", h = " + c.h);
+                GL11.glTexCoord2f(minU, minV);
+                GL11.glColor4f(0, 1, 0, 1);
+                GL11.glVertex2f(x - c.padding, y);
+                GL11.glTexCoord2f(maxU, minV);
+                GL11.glColor4f(0, 1, 0, 1);
+                GL11.glVertex2f(x + c.w - c.padding, y);
                 
-                GL11.glVertex2f(x + c.w - c.padding * 2f, c.h * 2);
-                //GL11.glColor4f(col.getRed(), col.getGreen(), col.getBlue(), 1);
                 GL11.glTexCoord2f(maxU, maxV);
+                GL11.glColor4f(0, 1, 0, 1);
+                GL11.glVertex2f(x + c.w - c.padding, y + c.h);
                 
-                GL11.glVertex2f(x + c.w - c.padding * 2f, 0);
-                //GL11.glColor4f(col.getRed(), col.getGreen(), col.getBlue(), 1);
-                GL11.glTexCoord2f(maxU, minV);
+                GL11.glTexCoord2f(minU, maxV);
+                GL11.glColor4f(0, 1, 0, 1);
+                GL11.glVertex2f(x - c.padding, y + c.h);
 
-
-               /* GL11.glVertex2f(x + chars[ch].w - c.padding, y);
-                //GL11.glColor4f(col.getRed(), col.getGreen(), col.getBlue(), 1);
-                GL11.glTexCoord2f(maxU, minV);
-
-                GL11.glVertex2f(x - c.padding, y + chars[ch].h);
-                //GL11.glColor4f(col.getRed(), col.getGreen(), col.getBlue(), 1);
-                GL11.glTexCoord2f(minU, maxV)*/
-				
-
+                GL11.glEnd();
+                
     			x += c.advance;
             }
-        }
-        GL11.glEnd();
         
         glPopMatrix();
 		glDisable(GL_TEXTURE_2D);
-		
-		
-		//renderer.drawImageFromTexture(fontTexture[2], 0, 0, 1);
     }
 
     public int getWidth(String str)
