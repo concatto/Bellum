@@ -235,4 +235,9 @@ public class GLRenderer implements Renderer {
 		glPopMatrix();
 		glDisable(GL_TEXTURE_2D);
 	}
+
+	@Override
+	public IntVec computeTextSize(String text) {
+		return new IntVec(currentFont.getWidth(text), currentFont.getHeight());
+	}
 }

@@ -4,12 +4,11 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JPanel;
 
@@ -25,7 +24,6 @@ public class SwingRenderer implements Renderer {
 	private int width;
 	private int height;
 	private float currentRotation;
-	private List<BufferedImage> images = new ArrayList<>();
 	private JPanel targetPanel;
 	private FloatVec scale;
 	
@@ -153,5 +151,11 @@ public class SwingRenderer implements Renderer {
 		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 		graphics.drawImage(sub, 0, 0, null);
 		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1));
+	}
+
+	@Override
+	public IntVec computeTextSize(String text) {
+		FontMetrics metrics = graphics.getFontMetrics();
+		return new IntVec(metrics.stringWidth(text), metrics.getHeight());
 	}
 }

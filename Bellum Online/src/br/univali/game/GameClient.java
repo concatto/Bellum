@@ -32,24 +32,22 @@ public class GameClient {
 		MainMenu menu = new MainMenu(window);
 		
 		window.display();
-		menu.displayAndWait();
+		
+		do {
+			menu.displayWelcome();
+			
+			try {
+				Registry registry = LocateRegistry.getRegistry(8080);
+				server = (RemoteInterface) registry.lookup("server");
+				collection = server.getGameObjectCollection();
+			} catch (RemoteException | NotBoundException e) {
+				e.printStackTrace();
+				menu.displayConnectionFailure();
+				server = null;
+			}
+		} while (server == null);
 		
 		textureManager = new TextureManager(textureFolder);
-		
-		try {
-			Registry registry = LocateRegistry.getRegistry(8080);
-			server = (RemoteInterface) registry.lookup("server");
-		} catch (RemoteException | NotBoundException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			collection = server.getGameObjectCollection();
-		} catch (RemoteException e1) {
-			collection = null;
-			e1.printStackTrace();
-		}
-		
 		hud = new HUDController(collection, renderer, window.getSize());
 		drawing = new DrawingController(collection, textureManager, window.getSize());
 		

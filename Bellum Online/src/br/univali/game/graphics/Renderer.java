@@ -4,6 +4,7 @@ import java.awt.Font;
 
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;
+import br.univali.game.util.IntVec;
 
 public interface Renderer {
 	void clear();
@@ -16,6 +17,7 @@ public interface Renderer {
 	
 	void setFont(Font font);
 	void drawText(String text, float x, float y);
+	IntVec computeTextSize(String text);
 	void setScale(FloatVec scale);
 	void setRotation(float radians);
 	void draw();

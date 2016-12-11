@@ -91,7 +91,7 @@ public class Application {
 			
 			dialog.dispose();
 			
-			new Thread(r).start();
+			new Thread(r).start(); //Saindo da Event Dispatch Thread
 		};
 
 		openGLButton.addActionListener(listener);
