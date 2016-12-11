@@ -2,37 +2,10 @@ package br.univali.game.graphics.opengl;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glVertex2f;
 
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2014-2015 Sri Harsha Chilakapati
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
@@ -257,18 +230,14 @@ public class TrueTypeFont
                 
                 //System.out.println("x = " + c.x + ", y = " + c.y + ", w = " + c.w + ", h = " + c.h);
                 GL11.glTexCoord2f(minU, minV);
-                GL11.glColor4f(0, 1, 0, 1);
                 GL11.glVertex2f(x - c.padding, y);
                 GL11.glTexCoord2f(maxU, minV);
-                GL11.glColor4f(0, 1, 0, 1);
                 GL11.glVertex2f(x + c.w - c.padding, y);
                 
                 GL11.glTexCoord2f(maxU, maxV);
-                GL11.glColor4f(0, 1, 0, 1);
                 GL11.glVertex2f(x + c.w - c.padding, y + c.h);
                 
                 GL11.glTexCoord2f(minU, maxV);
-                GL11.glColor4f(0, 1, 0, 1);
                 GL11.glVertex2f(x - c.padding, y + c.h);
 
                 GL11.glEnd();

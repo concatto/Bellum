@@ -1,8 +1,5 @@
 package br.univali.game.controllers;
 
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-
 import br.univali.game.GameConstants;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.objects.CombatObject;

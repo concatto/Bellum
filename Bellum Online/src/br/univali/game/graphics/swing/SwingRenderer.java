@@ -8,14 +8,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import br.univali.game.graphics.Renderer;
+import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;
 import br.univali.game.util.IntVec;
@@ -100,30 +99,6 @@ public class SwingRenderer implements Renderer {
 	*/
 
 	@Override
-	public int loadImage(String path) throws IOException {
-		BufferedImage image = ImageIO.read(SwingRenderer.class.getClassLoader().getResource(path));
-		
-		int index = images.size();
-		images.add(image);
-		return index;
-	}
-
-	@Override
-	public void drawImage(int image, float x, float y) {
-		drawImage(image, x, y, 1);
-	}
-	
-	@Override
-	public void drawImage(int image, float x, float y, float alpha) {
-		BufferedImage img = images.get(image);
-		
-		applyTransforms(x, y, img.getWidth(), img.getHeight());
-		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-		graphics.drawImage(img, 0, 0, img.getWidth(), img.getHeight(), null);
-		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1));
-	}
-
-	@Override
 	public void setRotation(float radians) {
 		currentRotation = radians;
 	}
@@ -143,29 +118,40 @@ public class SwingRenderer implements Renderer {
 	}
 
 	@Override
-	public void drawSubImage(int image, float x, float y, IntRect rect) {
-		BufferedImage img = images.get(image);
-		BufferedImage sub = img.getSubimage(rect.x, rect.y, rect.width, rect.height);
-		
-		applyTransforms(x, y, rect.width, rect.height);
-		
-		graphics.drawImage(sub, 0, 0, null);
-	}
-	
-	@Override
-	public IntVec getImageSize(int image) {
-		BufferedImage img = images.get(image);
-		return new IntVec(img.getWidth(), img.getHeight());
-	}
-
-	@Override
 	public void setFont(Font font) {
 		graphics.setFont(font);
 	}
 
 	@Override
 	public void drawText(String text, float x, float y) {
-		applyTransforms(0, 0, 0, 0);
+		applyTransforms(x, y, 0, 0);
 		graphics.drawString(text, 0, graphics.getFontMetrics().getAscent());
+	}
+
+	@Override
+	public void drawTexture(Texture texture, float x, float y) {
+		drawTexture(texture, x, y, 1);
+	}
+
+	@Override
+	public void drawTexture(Texture texture, float x, float y, float alpha) {
+		IntVec size = texture.getSize();
+		drawTextureFrame(texture, x, y, new IntRect(0, 0, size.x, size.y), alpha);
+	}
+
+	@Override
+	public void drawTextureFrame(Texture texture, float x, float y, IntRect frame) {
+		drawTextureFrame(texture, x, y, frame, 1);
+	}
+	
+	@Override
+	public void drawTextureFrame(Texture texture, float x, float y, IntRect frame, float alpha) {
+		BufferedImage sub = texture.getImage().getSubimage(frame.x, frame.y, frame.width, frame.height);
+		
+		applyTransforms(x, y, frame.width, frame.height);
+		
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+		graphics.drawImage(sub, 0, 0, null);
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1));
 	}
 }

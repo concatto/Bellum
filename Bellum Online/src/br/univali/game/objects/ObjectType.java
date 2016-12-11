@@ -3,5 +3,9 @@ package br.univali.game.objects;
 public enum ObjectType {
 	BULLET, CANNONBALL, HELICOPTER, TANK, PLAYER_TANK,
 	EXPLOSION, SPARK, SHIELD, SPECIAL_BULLET,
-	SPECIAL_EXPLOSION, HEALTH_PICKUP, SPECIAL_PICKUP, KILLS
+	SPECIAL_EXPLOSION, HEALTH_PICKUP, SPECIAL_PICKUP, KILLS;
+	
+	public int getTextureId() {
+		return ordinal();
+	}
 }

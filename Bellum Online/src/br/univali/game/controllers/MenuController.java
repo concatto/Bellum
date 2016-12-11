@@ -4,7 +4,6 @@ import br.univali.game.event.input.MouseButton;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
 import br.univali.game.graphics.TextureManager;
-import br.univali.game.objects.MiscType;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;
 import br.univali.game.util.IntVec;
@@ -23,8 +22,8 @@ public class MenuController {
 		this.input = input;
 		this.windowSize = windowSize.toFloat();
 		
-		startButton = textureManager.getMiscTexture(MiscType.START_BUTTON);
-		youDiedTexture = textureManager.getMiscTexture(MiscType.YOU_DIED);
+		startButton = Texture.load("images/start.png");
+		youDiedTexture = Texture.load("imaged/you_died.png");
 	}
 	
 	public void drawGameMenu(Renderer renderer) {
@@ -32,8 +31,7 @@ public class MenuController {
 		
 		renderer.setColor(0, 0, 0, 0.65f);
 		renderer.drawRectangle(0, 0, windowSize.x, windowSize.y);
-		
-		renderer.drawImage(startButton.getId(), pos.x, pos.y);
+		renderer.drawTexture(startButton, pos.x, pos.y);
 		canContinue = true;
 	}
 	
@@ -48,7 +46,7 @@ public class MenuController {
 		renderer.setColor(0, 0, 0, alpha / 2f);
 		renderer.drawRectangle(0, 0, windowSize.x, windowSize.y);
 		
-		renderer.drawImage(youDiedTexture.getId(), pos.x, pos.y, alpha);
+		renderer.drawTexture(youDiedTexture, pos.x, pos.y, alpha);
 		
 		if (alpha < 1) {
 			if (System.currentTimeMillis() - lastUpdate > 10) {

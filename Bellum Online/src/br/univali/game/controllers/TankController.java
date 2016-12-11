@@ -3,6 +3,7 @@ package br.univali.game.controllers;
 import java.util.Set;
 
 import br.univali.game.GameConstants;
+import br.univali.game.Keyboard;
 import br.univali.game.Spawner;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
@@ -20,11 +21,10 @@ public class TankController extends PlayerController {
 	private MouseButton cannonballButton = MouseButton.RIGHT;
 	private int leftKey = 'A';
 	private int rightKey = 'D';
-	private int shieldKey = KeyboardEvent.SPACE;
+	private int shieldKey = Keyboard.SPACE;
 	
 	private PlayerTank tank;
 	private DrawableObject shield;
-	private GameObjectCollection collection;
 	
 	private long lastCannon = 0;
 

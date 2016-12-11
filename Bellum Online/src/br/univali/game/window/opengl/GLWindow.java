@@ -99,33 +99,9 @@ public class GLWindow extends GameWindow {
 			public void invoke(long window, int key, int scancode, int action, int mods) {
 				InputEventType type = (action != GLFW.GLFW_RELEASE) ? InputEventType.PRESS : InputEventType.RELEASE;
 				
-				if (key < '0' || key > 'Z') {
-					key = convertKey(key);
-				}
-				
-				keyboardAction.accept(new KeyboardEvent(key, type));
+				keyboardAction.accept(new KeyboardEvent(GLKeyConverter.fromGL(key), type));
 			}
 		});
-	}
-
-	private static int convertKey(int key) {
-		switch (key) {
-		case GLFW.GLFW_KEY_LEFT:
-			return KeyboardEvent.LEFT;
-		case GLFW.GLFW_KEY_RIGHT:
-			return KeyboardEvent.RIGHT;
-		case GLFW.GLFW_KEY_UP:
-			return KeyboardEvent.UP;
-		case GLFW.GLFW_KEY_DOWN:
-			return KeyboardEvent.DOWN;
-		case GLFW.GLFW_KEY_LEFT_CONTROL:
-		case GLFW.GLFW_KEY_RIGHT_CONTROL:
-			return KeyboardEvent.CTRL;
-		case GLFW.GLFW_KEY_SPACE:
-			return KeyboardEvent.SPACE;
-		}
-		
-		return -1;
 	}
 
 	@Override
@@ -146,5 +122,10 @@ public class GLWindow extends GameWindow {
 	@Override
 	public void setTitle(String title) {
 		GLFW.glfwSetWindowTitle(window, title);
+	}
+
+	@Override
+	public boolean isKeyPressed(int key) {
+		return GLFW.glfwGetKey(window, GLKeyConverter.toGL(key)) == GLFW.GLFW_PRESS;
 	}
 }

@@ -1,6 +1,5 @@
 package br.univali.game.server;
 
-import java.awt.Font;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -18,23 +17,18 @@ import br.univali.game.controllers.HelicopterController;
 import br.univali.game.controllers.LogicController;
 import br.univali.game.controllers.PhysicsController;
 import br.univali.game.controllers.TankController;
-import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
-import br.univali.game.window.GameWindow;
+import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
-import br.univali.game.window.WindowFactory;
 
 public class GameServer {
-	private static int currentId = 0; 
-	
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
-	private ServerWindow serverWindow;
-	private Renderer renderer;
+	private ServerWindow serverWindow;	
 	private TextureManager textureManager;
 	private GameObjectCollection collection;
 	private LogicController logic;
@@ -47,17 +41,13 @@ public class GameServer {
 	private List<Client> clients = new ArrayList<>();
 	private Registry registry = null;
 	private RemoteInterface remoteInterface;
-
-	private GameWindow window;
+	
+	private IntVec worldSize = new IntVec(800, 600);
 
 	public GameServer(RenderMode renderMode, String textureFolder) {
 		serverWindow = new ServerWindow();
 		serverWindow.setOnClose(() -> System.exit(0));
 		serverWindow.setVisible(true);
-		
-		window = WindowFactory.createWindow(renderMode, "", 800, 600);
-		renderer = window.getRenderer();
-		textureManager = new TextureManager(renderer, textureFolder);
 		
 		serverWindow.publishMessage("Loading textures...");
 		try {
@@ -87,9 +77,6 @@ public class GameServer {
 			});
 			
 			remoteInterface.onStart(() -> serverWindow.publishMessage("Hello world"));
-			remoteInterface.onKeyboardEvent(event -> {
-				serverWindow.publishMessage("Evento de teclado: tipo " + event.getType() + ", tecla " + event.getKey());
-			});
 			
 			registry.bind("server", UnicastRemoteObject.exportObject(remoteInterface, 8080));
 		} catch (RemoteException | AlreadyBoundException e) {
@@ -100,13 +87,10 @@ public class GameServer {
 		
 		serverWindow.publishMessage("Creating controllers...");		
 		
-		logic = new LogicController(collection, spawner, window.getSize());
+		logic = new LogicController(collection, spawner, worldSize);
 		physics = new PhysicsController(collection, logic.getGroundLevel());
 		animation = new AnimationController(collection, textureManager);	
 		serverWindow.publishMessage("Controllers created.");
-		
-		window.display();
-		Renderer renderer = window.getRenderer();
 		
 //		while (true) {
 //			renderer.setColor(0.5f, 0.5f, 0.5f);
@@ -148,9 +132,9 @@ public class GameServer {
 			Client conn = clients.get(i);
 			
 			if (i == tankIndex) {
-				conn.setController(new TankController(spawner, collection, window.getSize()));
+				conn.setController(new TankController(spawner, collection, worldSize));
 			} else {
-				conn.setController(new HelicopterController(spawner, collection, window.getSize()));
+				conn.setController(new HelicopterController(spawner, collection, worldSize));
 			}
 			
 			i++;

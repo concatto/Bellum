@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import br.univali.game.server.GameServer;
@@ -40,8 +41,6 @@ public class Application {
 
 		themeGroup.setSelected(normal.getModel(), true);
 
-		
-		
 		JRadioButton client = new JRadioButton("Cliente");
 		JRadioButton server = new JRadioButton("Servidor");
 
@@ -62,9 +61,6 @@ public class Application {
 
 		modeGroup.setSelected(normal.getModel(), true);
 
-
-		
-		
 		JButton openGLButton = new JButton("Iniciar com OpenGL");
 		JButton swingButton = new JButton("Iniciar com Swing");
 
@@ -111,13 +107,14 @@ public class Application {
 
 	public static void main(String[] args) {
 		try {
-			
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		new Application();
+		SwingUtilities.invokeLater(() -> {
+			new Application();
+		});
 	}
 
 }

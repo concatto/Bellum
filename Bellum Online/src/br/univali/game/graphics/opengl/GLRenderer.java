@@ -27,16 +27,14 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
 import java.awt.Font;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import br.univali.game.graphics.Renderer;
+import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatRect;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;
@@ -46,8 +44,7 @@ public class GLRenderer implements Renderer {
 	private long window;
 	private float rotation;
 	private FloatVec scale;
-	private GLImageLoader textureLoader = new GLImageLoader();
-	private List<GLTexture> textureList = new ArrayList<>();
+	private Map<Texture, GLTexture> textureMap = new HashMap<>();
 	private Map<Font, TrueTypeFont> fonts = new HashMap<>();
 	private TrueTypeFont currentFont = null;
 	
@@ -138,57 +135,6 @@ public class GLRenderer implements Renderer {
 	*/
 
 	@Override
-	public int loadImage(String path) throws IOException {
-		GLTexture tex = textureLoader.getTexture(path);
-		
-		int position = textureList.size();
-		textureList.add(tex);
-		return position;
-	}
-
-	@Override
-	public void drawImage(int image, float x, float y) {
-		drawImage(image, x, y, 1);
-	}
-	
-	@Override
-	public void drawImage(int image, float x, float y, float alpha) {
-		drawImageFromTexture(textureList.get(image), x, y, alpha);
-	}
-	
-	public void drawImageFromTexture(GLTexture tex, float x, float y, float alpha) {
-		glEnable(GL_BLEND); 
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_TEXTURE_2D);
-		glPushMatrix();
-		
-		tex.bind();
-		
-		applyTransforms(x, y, tex.getImageWidth(), tex.getImageHeight());
-
-		glColor4f(1, 1, 1, alpha);
-		glBegin(GL_QUADS);
-		{
-			glTexCoord2f(0, 0);
-			glVertex2f(0, 0);
-			
-			glTexCoord2f(0, tex.getHeight());
-			glVertex2f(0, tex.getImageHeight());
-			
-			glTexCoord2f(tex.getWidth(), tex.getHeight());
-			glVertex2f(tex.getImageWidth(), tex.getImageHeight());
-			
-			glTexCoord2f(tex.getWidth(), 0);
-			glVertex2f(tex.getImageWidth(), 0);
-		}
-		glEnd();
-		glPopMatrix();
-		glDisable(GL_TEXTURE_2D);
-		
-		glColor4f(1, 1, 1, 1);
-	}
-
-	@Override
 	public void setRotation(float radians) {
 		rotation = (float) Math.toDegrees(radians);
 	}
@@ -200,51 +146,6 @@ public class GLRenderer implements Renderer {
 		
 		glMatrixMode(GL11.GL_MODELVIEW);
 		glLoadIdentity();
-	}
-
-	@Override
-	public void drawSubImage(int image, float x, float y, IntRect rect) {
-		glEnable(GL_BLEND); 
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_TEXTURE_2D);
-		glPushMatrix();
-		
-		GLTexture tex = textureList.get(image);
-		tex.bind();
-		
-		float xCoef = tex.getWidth() / tex.getImageWidth();
-		float yCoef = tex.getHeight() / tex.getImageHeight();
-		
-		FloatRect scaled = new FloatRect(rect.x * xCoef, rect.y * yCoef, 
-										rect.width * xCoef, rect.height * yCoef);
-		
-		applyTransforms(x, y, rect.width, rect.height);
-		
-		glColor3f(1, 1, 1);
-		glBegin(GL_QUADS);
-		{
-			//Anti-horário começando do canto superior esquerdo
-			glTexCoord2f(scaled.x, scaled.y);
-			glVertex2f(0, 0);
-			
-			glTexCoord2f(scaled.x, scaled.y + scaled.height);
-			glVertex2f(0, rect.height);
-			
-			glTexCoord2f(scaled.x + scaled.width, scaled.y + scaled.height);
-			glVertex2f(rect.width, rect.height);
-			
-			glTexCoord2f(scaled.x + scaled.width, scaled.y);
-			glVertex2f(rect.width, 0);
-		}
-		glEnd();
-		glPopMatrix();
-		glDisable(GL_TEXTURE_2D);
-	}
-
-	@Override
-	public IntVec getImageSize(int image) {
-		GLTexture tex = textureList.get(image);
-		return new IntVec(tex.getImageWidth(), tex.getImageHeight());
 	}
 
 	@Override
@@ -270,5 +171,68 @@ public class GLRenderer implements Renderer {
 		}
 		
 		currentFont.drawString(text, x, y, this);
+	}
+
+	@Override
+	public void drawTexture(Texture texture, float x, float y) {
+		drawTexture(texture, x, y, 1);
+	}
+
+	@Override
+	public void drawTexture(Texture texture, float x, float y, float alpha) {
+		IntVec size = texture.getSize();
+		drawTextureFrame(texture, x, y, new IntRect(0, 0, size.x, size.y), alpha);
+	}
+
+	@Override
+	public void drawTextureFrame(Texture texture, float x, float y, IntRect frame) {
+		drawTextureFrame(texture, x, y, frame, 1);
+	}
+	
+	@Override
+	public void drawTextureFrame(Texture texture, float x, float y, IntRect frame, float alpha) {
+		glEnable(GL_BLEND); 
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_TEXTURE_2D);
+		glPushMatrix();
+		
+		GLTexture glTex;
+		if (textureMap.containsKey(texture)) {
+			glTex = textureMap.get(texture);
+		} else {
+			glTex = GLImageLoader.fromBufferedImage(texture.getImage());
+			
+			textureMap.put(texture, glTex);
+		}
+		
+		glTex.bind();
+		
+		float xCoef = glTex.getWidth() / glTex.getImageWidth();
+		float yCoef = glTex.getHeight() / glTex.getImageHeight();
+		
+		FloatRect scaled = new FloatRect(frame.x * xCoef, frame.y * yCoef, 
+										frame.width * xCoef, frame.height * yCoef);
+		
+		applyTransforms(x, y, frame.width, frame.height);
+		
+		glColor3f(1, 1, 1);
+		glBegin(GL_QUADS);
+		{
+			//Anti-horário começando do canto superior esquerdo
+			glTexCoord2f(scaled.x, scaled.y);
+			glVertex2f(0, 0);
+			
+			glTexCoord2f(scaled.x, scaled.y + scaled.height);
+			glVertex2f(0, frame.height);
+			
+			glTexCoord2f(scaled.x + scaled.width, scaled.y + scaled.height);
+			glVertex2f(frame.width, frame.height);
+			
+			glTexCoord2f(scaled.x + scaled.width, scaled.y);
+			glVertex2f(frame.width, 0);
+		}
+		glEnd();
+		glPopMatrix();
+		glDisable(GL_TEXTURE_2D);
 	}
 }

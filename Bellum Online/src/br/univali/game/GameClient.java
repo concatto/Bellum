@@ -29,8 +29,12 @@ public class GameClient {
 	
 	public GameClient(RenderMode renderMode, String textureFolder) {
 		window = WindowFactory.createWindow(renderMode, "Bellum", 800, 600);
-		renderer = window.getRenderer();
-		textureManager = new TextureManager(renderer, textureFolder);
+		MainMenu menu = new MainMenu(window);
+		
+		window.display();
+		menu.displayAndWait();
+		
+		textureManager = new TextureManager(textureFolder);
 		
 		try {
 			Registry registry = LocateRegistry.getRegistry(8080);
@@ -72,7 +76,6 @@ public class GameClient {
 			
 			window.onMouseEvent(event -> { 
 				try {
-					System.out.println("Publishing");
 					connection.publishMouseEvent(event);
 				} catch (RemoteException e) {
 					e.printStackTrace();

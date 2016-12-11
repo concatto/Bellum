@@ -35,7 +35,6 @@ public class GameConnectionImpl implements GameConnection, Serializable {
 
 	@Override
 	public void publishMouseEvent(MouseEvent event) throws RemoteException {
-		System.out.println("Recv");
 		mouseConsumer.accept(event);
 	}
 

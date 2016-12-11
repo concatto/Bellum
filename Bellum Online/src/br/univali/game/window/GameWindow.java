@@ -77,4 +77,11 @@ public abstract class GameWindow {
 	public IntVec getSize() {
 		return new IntVec(width, height);
 	}
+
+	/**
+	 * Consulta o estado de uma tecla do teclado.
+	 * @param key a tecla desejada
+	 * @return <i>true</i> se estiver pressionada, <i>false</i> caso contrário
+	 */
+	public abstract boolean isKeyPressed(int key);
 }

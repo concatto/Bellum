@@ -1,7 +1,5 @@
 package br.univali.game.remote;
 
-import java.io.Serializable;
-
-public interface RemoteConsumer<T> extends Serializable {
+public interface RemoteConsumer<T> {
 	void accept(T t);
 }

@@ -3,18 +3,13 @@ package br.univali.game.remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
-import br.univali.game.event.input.KeyboardEvent;
-import br.univali.game.event.input.MouseEvent;
 import br.univali.game.objects.GameObjectCollection;
 
 public class RemoteInterfaceImpl implements RemoteInterface {
 	private GameObjectCollection collection;
 	private boolean startRequested = false;
 	private Runnable startAction;
-	private Consumer<KeyboardEvent> keyboardConsumer;
-	private Consumer<MouseEvent> mouseConsumer;
 	private Callable<GameConnection> connectionCallable;
 	
 	public RemoteInterfaceImpl(GameObjectCollection collection, Callable<GameConnection> connectionCallable) {
@@ -42,30 +37,6 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 	public void onStart(Runnable action) throws RemoteException {
 		startAction = action;
 	}
-
-	@Override
-	public void onKeyboardEvent(Consumer<KeyboardEvent> consumer) throws RemoteException {
-		keyboardConsumer = consumer;
-	}
-
-	@Override
-	public void onMouseEvent(Consumer<MouseEvent> consumer) throws RemoteException {
-		mouseConsumer = consumer;
-	}
-
-//	@Override
-//	public void publishKeyboardEvent(KeyboardEvent event) throws RemoteException {
-//		if (keyboardConsumer != null) {
-//			keyboardConsumer.accept(event);
-//		}
-//	}
-//
-//	@Override
-//	public void publishMouseEvent(MouseEvent event) throws RemoteException {
-//		if (mouseConsumer != null) {
-//			mouseConsumer.accept(event);
-//		}
-//	}
 
 	@Override
 	public GameConnection connectToServer() throws RemoteException {
