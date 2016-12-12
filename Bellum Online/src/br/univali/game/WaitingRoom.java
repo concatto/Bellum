@@ -8,6 +8,7 @@ import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.Player;
+import br.univali.game.util.IntVec;
 import br.univali.game.window.GameWindow;
 
 public class WaitingRoom extends GameScreen {
@@ -66,7 +67,15 @@ public class WaitingRoom extends GameScreen {
 						renderer.setColor(0.95f, c, c);
 					}
 					
-					renderer.drawText((i + 1) + ". " + p.getName(), 50, 200 + (i * 50));
+					String username = (i + 1) + ". " + p.getName();
+					renderer.drawText(username, 50, 200 + (i * 50));
+					if (self){
+						IntVec tSize = renderer.computeTextSize(username);
+						renderer.drawRectangle(
+							50, 200 + (i*50) + tSize.y,
+							tSize.x, 0.5f
+						);
+					}
 				}
 			} catch (ConnectException ce) {
 				throw ce;

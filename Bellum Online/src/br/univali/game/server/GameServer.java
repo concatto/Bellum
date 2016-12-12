@@ -131,6 +131,7 @@ public class GameServer {
 				Client c = it.next();
 				if (System.currentTimeMillis() - c.getConnection().getLastHeartbeat() > 5000) {
 					it.remove();
+					this.serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
 					//Provavelmente algo mais acontecerá quando isso ocorrer.
 				}
 			}
@@ -236,6 +237,8 @@ public class GameServer {
 		if (clients.size() == 1) {
 			//beginExecution();
 		}
+		
+		serverWindow.publishMessage("Player connected: "+identifier);
 		
 		return conn;
 	}
