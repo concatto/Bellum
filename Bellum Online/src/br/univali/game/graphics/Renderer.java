@@ -7,6 +7,9 @@ import br.univali.game.util.IntRect;
 import br.univali.game.util.IntVec;
 
 public interface Renderer {
+	public static final Font LARGE_FONT = new Font("Helvetica", Font.PLAIN, 40);
+	public static final Font MEDIUM_FONT = new Font("Helvetica", Font.PLAIN, 28);
+	
 	void clear();
 	void setColor(float red, float green, float blue);
 	void setColor(float red, float green, float blue, float alpha);

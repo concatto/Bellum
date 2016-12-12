@@ -1,23 +1,17 @@
 package br.univali.game;
 
-import java.awt.Font;
-
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;
-import br.univali.game.util.IntVec;
 import br.univali.game.window.GameWindow;
 
-public class MainMenu {
-	private GameWindow window;
-	private Renderer renderer;
+public class MainMenu extends GameScreen {
 	private Texture background;
 	private long time = 0;
 	
 	public MainMenu(GameWindow window) {
-		this.window = window;
-		this.renderer = window.getRenderer();
+		super(window);
 		this.background = Texture.load("images/menu_background.jpg");
 	}
 	
@@ -25,16 +19,14 @@ public class MainMenu {
 		boolean running = true;
 		time = 0;
 		
-		renderer.setFont(new Font("Arial", Font.PLAIN, 40));
+		renderer.setFont(Renderer.LARGE_FONT);
 		
-		while (running) {
-			FloatVec center = Geometry.centerVector(background.getSize().toFloat(), window.getSize().toFloat());
-			
+		while (running) {			
 			renderer.setColor(0, 0, 0);
 			renderer.clear();
 			
-			renderer.drawTexture(background, center.x, center.y);
-			drawOverlay(0.4f);
+			drawCentralizedTexture(background);
+			drawOverlay(0.6f);
 			
 			if (window.isKeyPressed(Keyboard.ENTER) || time != 0) {
 				if (time == 0) {
@@ -47,37 +39,19 @@ public class MainMenu {
 					} else {
 						String text = String.format("Starting in %.2f", remaining);
 						
-						renderer.setColor(0.48f, 0.72f, 0.85f);
+						renderer.setColor(0.58f, 0.82f, 0.95f);
 						centralizeXAndDraw(text, 50);
 					}
 				}
 			} else {
-				renderer.setColor(0.48f, 0.72f, 0.85f);
+				renderer.setColor(0.58f, 0.82f, 0.95f);
 				centralizeXAndDraw("Press ENTER to start", 50);
 			}
 			
 			renderer.draw();
 		}
 	}
-
-	private void centralizeAndDraw(String text) {
-		FloatVec center = centralize(text);
-		renderer.drawText(text, center.x, center.y);
-	}
 	
-	private void centralizeXAndDraw(String text, int y) {
-		renderer.drawText(text, centralize(text).x, y);
-	}
-	
-	private void centralizeYAndDraw(String text, int x) {
-		renderer.drawText(text, x, centralize(text).x);
-	}
-	
-	private FloatVec centralize(String text) {
-		IntVec size = renderer.computeTextSize(text);
-		return Geometry.centerVector(size.toFloat(), window.getSize().toFloat());
-	}
-
 	public void displayConnectionFailure() {
 		long time = System.currentTimeMillis();
 		
@@ -92,10 +66,5 @@ public class MainMenu {
 			
 			renderer.draw();
 		}
-	}
-	
-	private void drawOverlay(float alpha) {
-		renderer.setColor(0, 0, 0, alpha);
-		renderer.drawRectangle(0, 0, window.getWidth(), window.getHeight());
 	}
 }

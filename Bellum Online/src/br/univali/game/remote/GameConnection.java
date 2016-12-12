@@ -11,4 +11,7 @@ public interface GameConnection extends Remote {
 	void publishKeyboardEvent(KeyboardEvent event) throws RemoteException;
 	void publishMouseEvent(MouseEvent event) throws RemoteException;
 	void publishMousePosition(IntVec position) throws RemoteException;
+	void publishReady(boolean ready) throws RemoteException;
+	GameInformation getGameInformation() throws RemoteException;
+	void heartbeat() throws RemoteException;
 }

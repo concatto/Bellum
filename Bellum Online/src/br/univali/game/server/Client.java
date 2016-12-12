@@ -6,8 +6,11 @@ import br.univali.game.remote.GameConnectionImpl;
 public class Client {
 	private PlayerController controller;
 	private GameConnectionImpl connection;
+	private String identifier;
+	private boolean ready = false;
 
-	public Client(GameConnectionImpl connection) {
+	public Client(String identifier, GameConnectionImpl connection) {
+		this.identifier = identifier;
 		this.connection = connection;
 	}
 	
@@ -28,5 +31,17 @@ public class Client {
 	
 	public GameConnectionImpl getConnection() {
 		return connection;
+	}
+	
+	public String getIdentifier() {
+		return identifier;
+	}
+	
+	public void setReady(boolean ready) {
+		this.ready = ready;
+	}
+	
+	public boolean isReady() {
+		return ready;
 	}
 }

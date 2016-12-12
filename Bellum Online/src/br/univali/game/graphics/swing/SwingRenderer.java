@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
@@ -52,6 +53,7 @@ public class SwingRenderer implements Renderer {
 	private void createImage() {
 		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		graphics = image.createGraphics();
+		graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 	}
 
 	@Override
@@ -122,8 +124,12 @@ public class SwingRenderer implements Renderer {
 
 	@Override
 	public void drawText(String text, float x, float y) {
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
 		applyTransforms(x, y, 0, 0);
 		graphics.drawString(text, 0, graphics.getFontMetrics().getAscent());
+		
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 	}
 
 	@Override

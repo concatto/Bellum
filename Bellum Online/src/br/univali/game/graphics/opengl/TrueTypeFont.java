@@ -48,7 +48,7 @@ public class TrueTypeFont
 
     public TrueTypeFont(Font fnt)
     {
-        this(fnt, false);
+        this(fnt, true);
     }
 
     public TrueTypeFont(Font fnt, boolean antiAlias)
@@ -148,8 +148,10 @@ public class TrueTypeFont
                 g2d.setFont(awtFont);
                 g2d.setColor(java.awt.Color.WHITE);
 
-                if (antiAlias)
+                if (antiAlias) {
                     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
 
                 page = fntChar.page;
             }
@@ -192,7 +194,7 @@ public class TrueTypeFont
     public void drawString(String text, float x, float y, GLRenderer renderer)
     {
     	GL11.glEnable(GL_BLEND); 
-    	GL11.glBlendFunc(GL11.GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    	GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glEnable(GL_TEXTURE_2D);
 		GL11.glPushMatrix();
 

@@ -8,8 +8,12 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import br.univali.game.Spawner;
 import br.univali.game.controllers.AnimationController;
@@ -21,6 +25,8 @@ import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.GameConnectionImpl;
+import br.univali.game.remote.GameInformation;
+import br.univali.game.remote.Player;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
 import br.univali.game.util.IntVec;
@@ -28,6 +34,7 @@ import br.univali.game.window.RenderMode;
 
 public class GameServer {
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
 	private ServerWindow serverWindow;	
 	private TextureManager textureManager;
 	private GameObjectCollection collection;
@@ -51,6 +58,8 @@ public class GameServer {
 		
 		serverWindow.publishMessage("Loading textures...");
 		try {
+			textureManager = new TextureManager(textureFolder);
+			
 			textureManager.loadAllTextures();
 			serverWindow.publishMessage("Texture loading completed.");
 		} catch (IOException e) {
@@ -65,26 +74,16 @@ public class GameServer {
 		
 		try {
 			registry = LocateRegistry.createRegistry(8080);
-			remoteInterface = new RemoteInterfaceImpl(collection, () -> {
-				GameConnection conn = new GameConnectionImpl();
-				clients.add(new Client((GameConnectionImpl) conn));
-				
-				if (clients.size() == 1) {
-					beginExecution();
-				}
-				
-				return conn;
-			});
-			
-			remoteInterface.onStart(() -> serverWindow.publishMessage("Hello world"));
+			remoteInterface = new RemoteInterfaceImpl(this);
 			
 			registry.bind("server", UnicastRemoteObject.exportObject(remoteInterface, 8080));
 		} catch (RemoteException | AlreadyBoundException e) {
 			e.printStackTrace();
 		}
 		
-		spawner.spawnTank();
+		launchHeartbeat();
 		
+		spawner.spawnTank();
 		serverWindow.publishMessage("Creating controllers...");		
 		
 		logic = new LogicController(collection, spawner, worldSize);
@@ -123,6 +122,18 @@ public class GameServer {
 //				e.printStackTrace();
 //			}
 //		}
+	}
+
+	private void launchHeartbeat() {
+		heartbeatExecutor.scheduleAtFixedRate(() -> {
+			for (ListIterator<Client> it = clients.listIterator(); it.hasNext(); ) {
+				Client c = it.next();
+				if (System.currentTimeMillis() - c.getConnection().getLastHeartbeat() > 5000) {
+					it.remove();
+					//Provavelmente algo mais acontecerá quando isso ocorrer.
+				}
+			}
+		}, 0, 1, TimeUnit.SECONDS);
 	}
 	
 	private void beginExecution() {
@@ -195,5 +206,30 @@ public class GameServer {
 		}
 		
 		return false;
+	}
+
+	public GameObjectCollection getGameObjectCollection() {
+		return collection;
+	}
+
+	public GameConnection createConnection(String identifier) {
+		GameConnectionImpl conn = new GameConnectionImpl();
+		Client client = new Client(identifier, conn);
+		
+		clients.add(client);
+		
+		conn.setGameInformationCallable(() -> {
+			return new GameInformation(clients.stream()
+					.map(c -> new Player(c.getIdentifier(), c.isReady()))
+					.collect(Collectors.toList()));
+		});
+		
+		conn.setReadyConsumer(r -> client.setReady(r));
+		
+		if (clients.size() == 1) {
+			//beginExecution();
+		}
+		
+		return conn;
 	}
 }

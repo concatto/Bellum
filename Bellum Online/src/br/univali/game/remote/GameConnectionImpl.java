@@ -1,16 +1,20 @@
 package br.univali.game.remote;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.util.concurrent.Callable;
 
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
 import br.univali.game.util.IntVec;
 
-public class GameConnectionImpl implements GameConnection, Serializable {
+public class GameConnectionImpl implements GameConnection {
 	private RemoteConsumer<KeyboardEvent> keyboardConsumer;
 	private RemoteConsumer<MouseEvent> mouseConsumer;
 	private RemoteConsumer<IntVec> positionConsumer;
+	private RemoteConsumer<Boolean> readyConsumer;
+	private long lastHeartbeat = Long.MAX_VALUE;
+	
+	private Callable<GameInformation> gameInformationCallable;
 	
 	public GameConnectionImpl() {
 		
@@ -28,6 +32,18 @@ public class GameConnectionImpl implements GameConnection, Serializable {
 		this.positionConsumer = positionConsumer;
 	}
 	
+	public void setReadyConsumer(RemoteConsumer<Boolean> readyConsumer) {
+		this.readyConsumer = readyConsumer;
+	}
+
+	public void setGameInformationCallable(Callable<GameInformation> callable) {
+		gameInformationCallable = callable;
+	}
+	
+	public long getLastHeartbeat() {
+		return lastHeartbeat;
+	}
+	
 	@Override
 	public void publishKeyboardEvent(KeyboardEvent event) throws RemoteException {
 		keyboardConsumer.accept(event);
@@ -42,5 +58,24 @@ public class GameConnectionImpl implements GameConnection, Serializable {
 	public void publishMousePosition(IntVec position) throws RemoteException {
 		positionConsumer.accept(position);
 	}
+	
+	@Override
+	public void publishReady(boolean ready) throws RemoteException {
+		readyConsumer.accept(ready);
+	}
 
+	@Override
+	public GameInformation getGameInformation() throws RemoteException {
+		try {
+			return gameInformationCallable.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public void heartbeat() throws RemoteException {
+		lastHeartbeat = System.currentTimeMillis();
+	}
 }
