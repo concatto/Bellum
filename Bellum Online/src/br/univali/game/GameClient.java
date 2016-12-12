@@ -1,12 +1,14 @@
 package br.univali.game;
 
 import java.io.IOException;
+import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import br.univali.game.controllers.DrawingController;
@@ -22,6 +24,7 @@ import br.univali.game.window.WindowFactory;
 
 public class GameClient {
 	private ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledFuture<?> heartbeatFuture;
 	private GameWindow window;
 	private Renderer renderer;
 	private TextureManager textureManager;
@@ -37,33 +40,46 @@ public class GameClient {
 		
 		window.display();
 		
+		boolean connectionError = false;
 		do {
-			menu.displayWelcome();
-			
-			try {
-				Registry registry = LocateRegistry.getRegistry(8080);
-				server = (RemoteInterface) registry.lookup("server");
+			do {
+				menu.displayWelcome();
 				
-				connection = server.connectToServer();
-				launchHeartbeatTask();
-			} catch (RemoteException | NotBoundException e) {
-				e.printStackTrace();
-				menu.displayConnectionFailure();
-				server = null;
-			}
-		} while (server == null);
-		
-		WaitingRoom room = new WaitingRoom(window, connection);
-		
-		room.onReady(ready -> {
+				try {
+					Registry registry = LocateRegistry.getRegistry(8080);
+					server = (RemoteInterface) registry.lookup("server");
+					
+					connection = server.connectToServer();
+					launchHeartbeatTask();
+				} catch (RemoteException | NotBoundException e) {
+					e.printStackTrace();
+					menu.displayConnectionFailure();
+					server = null;
+				}
+			} while (server == null);
+			
+			WaitingRoom room = new WaitingRoom(window, connection);
+			
+			room.onReady(ready -> {
+				try {
+					connection.publishReady(ready);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			});
+
 			try {
-				connection.publishReady(ready);
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				room.display();
+			} catch (ConnectException e2) {
+				e2.printStackTrace();
+				menu.displayConnectionFailure();
+				connection = null;
+				heartbeatFuture.cancel(false);
+				connectionError = true;
 			}
-		});
+		} while (connectionError);
 		
-		room.display();
+		/// Start game
 		
 		textureManager = new TextureManager(textureFolder);
 		hud = new HUDController(collection, renderer, window.getSize());
@@ -127,12 +143,13 @@ public class GameClient {
 	
 	
 	private void launchHeartbeatTask() {
-		heartbeatExecutor.scheduleAtFixedRate(() -> {
-			try {
-				connection.heartbeat();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+		 heartbeatFuture = heartbeatExecutor.scheduleAtFixedRate(() -> {
+			 if (connection == null) return;
+			 try {
+				 connection.heartbeat();
+			 } catch (RemoteException e) {
+				 e.printStackTrace();
+			 }
 		}, 0, 1, TimeUnit.SECONDS);
 	}
 

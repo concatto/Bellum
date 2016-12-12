@@ -1,5 +1,6 @@
 package br.univali.game;
 
+import java.rmi.ConnectException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -23,15 +24,25 @@ public class WaitingRoom extends GameScreen {
 		this.background = Texture.load("images/waiting_background.jpg");
 	}
 
-	public void display() {
+	public void display() throws ConnectException {
 		boolean running = true;
-		
-		renderer.setFont(Renderer.MEDIUM_FONT);
 		
 		while (running) {
 			renderer.clear();
 			drawCentralizedTexture(background);
 			drawOverlay(0.7f);
+			
+			renderer.setFont(Renderer.LARGE_FONT);
+			renderer.setColor(0.2f, 0.8f, 0.2f);
+			centralizeXAndDraw("Waiting Room",50);
+			
+			renderer.setFont(Renderer.MEDIUM_FONT);
+			if ( ready ){
+				renderer.setColor(0.2f, 0.2f, 0.7f);
+			} else {
+				renderer.setColor(0.7f, 0.2f, 0.2f);
+			}
+			centralizeXAndDraw( ready ? "Waiting for the others players":"Press ENTER when ready", 110 );
 			
 			boolean enter = window.isKeyPressed(Keyboard.ENTER);
 			if (enter && !previousEnter) {
@@ -39,6 +50,7 @@ public class WaitingRoom extends GameScreen {
 				readyConsumer.accept(ready);
 			}
 			
+			renderer.setFont(Renderer.MEDIUM_FONT);
 			try {
 				List<Player> players = connection.getGameInformation().getPlayers();
 				
@@ -56,6 +68,8 @@ public class WaitingRoom extends GameScreen {
 					
 					renderer.drawText((i + 1) + ". " + p.getName(), 50, 200 + (i * 50));
 				}
+			} catch (ConnectException ce) {
+				throw ce;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
