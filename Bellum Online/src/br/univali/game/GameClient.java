@@ -113,7 +113,7 @@ public class GameClient {
 				
 				//System.out.println("Took " + (System.currentTimeMillis() - start));
 			}
-		}).start();
+		},"Mouse position sender, at GameClient.java").start();
 		
 		while (true) {			
 			drawGame();

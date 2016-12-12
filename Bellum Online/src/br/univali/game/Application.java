@@ -91,7 +91,7 @@ public class Application {
 			
 			dialog.dispose();
 			
-			new Thread(r).start(); //Saindo da Event Dispatch Thread
+			new Thread(r,"Game launcher, at Application.java").start(); //Saindo da Event Dispatch Thread
 		};
 
 		openGLButton.addActionListener(listener);
