@@ -1,12 +1,11 @@
 package br.univali.game;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
-import br.univali.game.remote.GameInformation;
+import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.Player;
 import br.univali.game.window.GameWindow;
 
@@ -15,14 +14,16 @@ public class WaitingRoom extends GameScreen {
 	private Consumer<Boolean> readyConsumer;
 	private boolean previousEnter = false;
 	private boolean ready = false;
+	private GameConnection connection;
 	
-	public WaitingRoom(GameWindow window) {
+	public WaitingRoom(GameWindow window, GameConnection connection) {
 		super(window);
 		
+		this.connection = connection;
 		this.background = Texture.load("images/waiting_background.jpg");
 	}
 
-	public void display(Callable<GameInformation> infoCallable) {
+	public void display() {
 		boolean running = true;
 		
 		renderer.setFont(Renderer.MEDIUM_FONT);
@@ -39,15 +40,18 @@ public class WaitingRoom extends GameScreen {
 			}
 			
 			try {
-				List<Player> players = infoCallable.call().getPlayers();
+				List<Player> players = connection.getGameInformation().getPlayers();
 				
 				for (int i = 0; i < players.size(); i++) {
 					Player p = players.get(i);
+					boolean self = p.getName().equals(connection.getIdentifier());
+					
+					float c = self ? 0.6f : 0.2f;
 					
 					if (p.isReady()) {
-						renderer.setColor(0.4f, 0.9f, 0.4f);
+						renderer.setColor(c, 0.95f, c);
 					} else {
-						renderer.setColor(0.9f, 0.4f, 0.4f);
+						renderer.setColor(0.95f, c, c);
 					}
 					
 					renderer.drawText((i + 1) + ". " + p.getName(), 50, 200 + (i * 50));

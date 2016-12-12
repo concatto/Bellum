@@ -14,4 +14,5 @@ public interface GameConnection extends Remote {
 	void publishReady(boolean ready) throws RemoteException;
 	GameInformation getGameInformation() throws RemoteException;
 	void heartbeat() throws RemoteException;
+	String getIdentifier() throws RemoteException;
 }

@@ -15,9 +15,10 @@ public class GameConnectionImpl implements GameConnection {
 	private long lastHeartbeat = Long.MAX_VALUE;
 	
 	private Callable<GameInformation> gameInformationCallable;
+	private String identifier;
 	
-	public GameConnectionImpl() {
-		
+	public GameConnectionImpl(String identifier) {
+		this.identifier = identifier;
 	}
 	
 	public void setKeyboardConsumer(RemoteConsumer<KeyboardEvent> keyboardConsumer) {
@@ -72,6 +73,11 @@ public class GameConnectionImpl implements GameConnection {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	@Override
+	public String getIdentifier() throws RemoteException {
+		return identifier;
 	}
 
 	@Override

@@ -44,7 +44,7 @@ public class GameClient {
 				Registry registry = LocateRegistry.getRegistry(8080);
 				server = (RemoteInterface) registry.lookup("server");
 				
-				connection = server.connectToServer(NameGenerator.getRandomName());
+				connection = server.connectToServer();
 				launchHeartbeatTask();
 			} catch (RemoteException | NotBoundException e) {
 				e.printStackTrace();
@@ -53,7 +53,7 @@ public class GameClient {
 			}
 		} while (server == null);
 		
-		WaitingRoom room = new WaitingRoom(window);
+		WaitingRoom room = new WaitingRoom(window, connection);
 		
 		room.onReady(ready -> {
 			try {
@@ -63,14 +63,7 @@ public class GameClient {
 			}
 		});
 		
-		room.display(() -> {
-			try {
-				return connection.getGameInformation();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-				return null;
-			}
-		});
+		room.display();
 		
 		textureManager = new TextureManager(textureFolder);
 		hud = new HUDController(collection, renderer, window.getSize());

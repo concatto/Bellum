@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import br.univali.game.NameGenerator;
 import br.univali.game.Spawner;
 import br.univali.game.controllers.AnimationController;
 import br.univali.game.controllers.HelicopterController;
@@ -55,7 +56,7 @@ public class GameServer {
 		serverWindow = new ServerWindow();
 		serverWindow.setOnClose(() -> System.exit(0));
 		serverWindow.setVisible(true);
-		
+
 		serverWindow.publishMessage("Loading textures...");
 		try {
 			textureManager = new TextureManager(textureFolder);
@@ -201,8 +202,6 @@ public class GameServer {
 			
 			animation.updateAnimations(delta);
 			lastFrame = time;
-			
-			//exportCollection();
 		}
 		
 		return false;
@@ -212,9 +211,17 @@ public class GameServer {
 		return collection;
 	}
 
-	public GameConnection createConnection(String identifier) {
-		GameConnectionImpl conn = new GameConnectionImpl();
-		Client client = new Client(identifier, conn);
+	public GameConnection createConnection() {
+		String identifier;
+		boolean matches = false;
+		do {
+			String s = NameGenerator.getRandomName();
+			matches = clients.stream().anyMatch(c -> c.getIdentifier().equals(s));
+			identifier = s;
+		} while (matches);
+		
+		GameConnectionImpl conn = new GameConnectionImpl(identifier);
+		Client client = new Client(conn);
 		
 		clients.add(client);
 		

@@ -19,9 +19,9 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 	}
 
 	@Override
-	public GameConnection connectToServer(String identifier) throws RemoteException {
+	public GameConnection connectToServer() throws RemoteException {
 		try {
-			GameConnection conn = server.createConnection(identifier);
+			GameConnection conn = server.createConnection();
 			return (GameConnection) UnicastRemoteObject.exportObject(conn, 8080);
 		} catch (Exception e) {
 			throw new RemoteException("Connection callable failed to execute");

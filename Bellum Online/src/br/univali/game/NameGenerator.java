@@ -7,13 +7,13 @@ public abstract class NameGenerator {
 	private static final String[] adjectives = {
 			"Sleepy", "Happy", "Tired", "Festive", "Thoughtful",
 			"Sad", "Serene", "Hopeful", "Merciful", "Angry",
-			"Vengeful", "Fearless", "Brave", "Kind"
+			"Vengeful", "Fearless", "Brave", "Kind", "Bad"
 	};
 	
 	private static final String[] nouns = {
 			"Wolf", "Cat", "Raven", "Shark", "Vampire",
 			"Wizard", "Warrior", "Soldier", "Ghost", "Spirit",
-			"Beast", "King", "Traveler", "Doctor"
+			"Beast", "King", "Traveler", "Doctor", "Falcon"
 	};
 	
 	public static String getRandomName() {

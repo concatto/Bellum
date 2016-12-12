@@ -6,5 +6,5 @@ import br.univali.game.objects.GameObjectCollection;
 
 public interface RemoteInterface extends Remote {
 	GameObjectCollection getGameObjectCollection() throws RemoteException;
-	GameConnection connectToServer(String identifier) throws RemoteException;
+	GameConnection connectToServer() throws RemoteException;
 }

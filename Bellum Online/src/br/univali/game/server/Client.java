@@ -1,16 +1,16 @@
 package br.univali.game.server;
 
+import java.rmi.RemoteException;
+
 import br.univali.game.controllers.PlayerController;
 import br.univali.game.remote.GameConnectionImpl;
 
 public class Client {
 	private PlayerController controller;
 	private GameConnectionImpl connection;
-	private String identifier;
 	private boolean ready = false;
 
-	public Client(String identifier, GameConnectionImpl connection) {
-		this.identifier = identifier;
+	public Client(GameConnectionImpl connection) {
 		this.connection = connection;
 	}
 	
@@ -34,7 +34,12 @@ public class Client {
 	}
 	
 	public String getIdentifier() {
-		return identifier;
+		try {
+			return connection.getIdentifier();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	public void setReady(boolean ready) {
