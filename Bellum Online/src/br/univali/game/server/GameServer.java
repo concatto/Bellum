@@ -233,7 +233,10 @@ public class GameServer {
 					.collect(Collectors.toList()));
 		});
 		
-		conn.setReadyConsumer(r -> client.setReady(r));
+		conn.setReadyConsumer(r -> {
+			client.setReady(r);
+			serverWindow.publishMessage( "Player"+ (r ? "":" not") +" ready: "+client.getIdentifier());
+		});
 		
 		if (clients.size() == 1) {
 			//beginExecution();
