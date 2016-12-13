@@ -1,6 +1,7 @@
 package br.univali.game;
 
 import java.rmi.ConnectException;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -34,9 +35,13 @@ public class WaitingRoom extends GameScreen {
 		setOverlayAlpha(0.6f);
 		
 		while (running) {
-			if (countdown.running() && countdown.finished()) {
-				running = false;
-				break;
+			try {
+				if (countdown.running() && countdown.finished() && connection.isServerReady()) {
+					running = false;
+					break;
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
 			}
 			
 			renderer.setColor(0, 0, 0);
@@ -91,7 +96,7 @@ public class WaitingRoom extends GameScreen {
 				Player p = players.get(i);
 				boolean self = p.getName().equals(connection.getIdentifier());
 				
-				float c = self ? 0.6f : 0.2f;
+				float c = self ? 0.2f : 0.6f;
 				
 				if (p.isReady()) {
 					renderer.setColor(c, 0.95f, c);
@@ -101,6 +106,11 @@ public class WaitingRoom extends GameScreen {
 				}
 				
 				String username = (i + 1) + ". " + p.getName();
+				
+				if (p.getRole() != PlayerRole.NONE) {
+					username += " (playing as " + p.getRole() + ")";
+				}
+				
 				renderer.drawText(username, 50, 200 + (i * 50));
 				if (self) {
 					IntVec tSize = renderer.computeTextSize(username);

@@ -8,6 +8,7 @@ import br.univali.game.Spawner;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
+import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
@@ -28,9 +29,9 @@ public class TankController extends PlayerController {
 	
 	private long lastCannon = 0;
 
-	public TankController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
+	public TankController(Spawner spawner, GameObjectCollection collection, IntVec windowSize, PlayerTank tank) {
 		super(spawner, collection, windowSize);
-		this.tank = collection.getTank();
+		this.tank = tank;
 	}
 	
 	public void setLeftKey(int leftKey) {

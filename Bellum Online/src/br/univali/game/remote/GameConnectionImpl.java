@@ -3,8 +3,10 @@ package br.univali.game.remote;
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
 
+import br.univali.game.PlayerRole;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
+import br.univali.game.objects.CombatObject;
 import br.univali.game.util.IntVec;
 
 public class GameConnectionImpl implements GameConnection {
@@ -15,10 +17,17 @@ public class GameConnectionImpl implements GameConnection {
 	private long lastHeartbeat = Long.MAX_VALUE;
 	
 	private Callable<GameInformation> gameInformationCallable;
+	private Callable<Boolean> serverReadyCallable;
+	private PlayerRole role = PlayerRole.NONE;
 	private String identifier;
+	private CombatObject object;
 	
 	public GameConnectionImpl(String identifier) {
 		this.identifier = identifier;
+	}
+	
+	public void setRole(PlayerRole role) {
+		this.role = role;
 	}
 	
 	public void setKeyboardConsumer(RemoteConsumer<KeyboardEvent> keyboardConsumer) {
@@ -41,8 +50,16 @@ public class GameConnectionImpl implements GameConnection {
 		gameInformationCallable = callable;
 	}
 	
+	public void setServerReadyCallable(Callable<Boolean> serverReadyCallable) {
+		this.serverReadyCallable = serverReadyCallable;
+	}
+	
 	public long getLastHeartbeat() {
 		return lastHeartbeat;
+	}
+	
+	public void setObject(CombatObject object) {
+		this.object = object;
 	}
 	
 	@Override
@@ -84,6 +101,16 @@ public class GameConnectionImpl implements GameConnection {
 	}
 	
 	@Override
+	public boolean isServerReady() throws RemoteException {
+		try {
+			return serverReadyCallable.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	@Override
 	public String getIdentifier() throws RemoteException {
 		return identifier;
 	}
@@ -91,5 +118,15 @@ public class GameConnectionImpl implements GameConnection {
 	@Override
 	public void heartbeat() throws RemoteException {
 		lastHeartbeat = System.currentTimeMillis();
+	}
+
+	@Override
+	public PlayerRole getRole() throws RemoteException {
+		return role;
+	}
+	
+	@Override
+	public CombatObject getObject() throws RemoteException {
+		return object;
 	}
 }

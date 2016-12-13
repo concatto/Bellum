@@ -2,10 +2,12 @@ package br.univali.game.controllers;
 
 import br.univali.game.GameConstants;
 import br.univali.game.Spawner;
+import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerHelicopter;
 import br.univali.game.util.Direction;
+import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntVec;
 
 public class HelicopterController extends PlayerController {
@@ -14,9 +16,9 @@ public class HelicopterController extends PlayerController {
 	
 	private Enemy helicopter;
 	
-	public HelicopterController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
+	public HelicopterController(Spawner spawner, GameObjectCollection collection, IntVec windowSize, Enemy helicopter) {
 		super(spawner,collection,windowSize);
-		helicopter = collection.getEnemies().get(0);
+		this.helicopter = helicopter;
 //		helicopter = collection.getHelicopter();
 	}
 	

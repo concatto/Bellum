@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import br.univali.game.NameGenerator;
+import br.univali.game.PlayerRole;
 import br.univali.game.Spawner;
 import br.univali.game.controllers.AnimationController;
 import br.univali.game.controllers.HelicopterController;
@@ -25,7 +26,10 @@ import br.univali.game.controllers.TankController;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.graphics.TextureManager;
+import br.univali.game.objects.CombatObject;
+import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
+import br.univali.game.objects.PlayerTank;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.GameInformation;
@@ -140,17 +144,37 @@ public class GameServer {
 	}
 
 	private void startGame() {
+		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
+
+		serverWindow.publishMessage("Creating player controllers...");
+
+		for (int i = 0; i < clients.size(); i++) {
+			Client c = clients.get(i);
+			
+			if (i == tankIndex) {	
+				PlayerTank tank = spawner.spawnTank();
+				
+				c.setObject(tank);
+				c.setController(new TankController(spawner, collection, worldSize, tank));
+				c.getConnection().setRole(PlayerRole.TANK);
+			} else {
+				Enemy helicopter = spawner.spawnHelicopter(new FloatVec(0, 0));
+				
+				c.setObject(helicopter);
+				c.setController(new HelicopterController(spawner, collection, worldSize, helicopter));
+				c.getConnection().setRole(PlayerRole.HELICOPTER);
+			}
+			
+			serverWindow.publishMessage("Client " + c.getIdentifier() + " is playing as " + c.getRole());
+		}
+		
 		serverWindow.publishMessage("Starting game...");
 		
-		Countdown c = Countdown.createAndStart(PREPARE_TIME);
-		while (!c.finished());
-
-		serverWindow.publishMessage("Spawning players...");
-		spawner.spawnTank();
-		for (int i = 0; i < clients.size()-1; i++){
-			spawner.spawnHelicopter(new FloatVec(10,10));
+		try {
+			Thread.sleep(PREPARE_TIME);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		serverWindow.publishMessage("Players spawned.");
 		
 		serverWindow.publishMessage("Creating controllers...");
 		
@@ -159,30 +183,14 @@ public class GameServer {
 		animation = new AnimationController(collection, textureManager);	
 		serverWindow.publishMessage("Controllers created.");
 		
-		beginExecution();
 		
-	}
-	
-	private void beginExecution() {
-		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
-
-		serverWindow.publishMessage("Creating players controllers...");
-		for (int i = 0; i < clients.size(); i++) {		
-			Client c = clients.get(i);
-			
-			if (i == tankIndex) {
-				c.setController(new TankController(spawner, collection, worldSize));
-			} else {
-				c.setController(new HelicopterController(spawner, collection, worldSize));
-			}
-		}
 		serverWindow.publishMessage("Players controllers created.");
-		
 		running = true;
 		
 		while (running) {
 			beginMainLoop();
 		}
+		
 	}
 	
 	/**
@@ -194,7 +202,7 @@ public class GameServer {
 		
 		lastFrame = System.nanoTime();
 		
-		while (running) {		
+		while (true) {		
 			long time = System.nanoTime();
 			float delta = (float) ((time - lastFrame) / 1E6);
 			
@@ -210,6 +218,14 @@ public class GameServer {
 			for (Client c : clients) {
 				try {
 					c.getController().update(delta);
+					
+//					if (c.isDead()) {
+//						if (c.getRole() == PlayerRole.HELICOPTER) {
+//							respawnHelicopter(c);
+//						} else if (c.getRole() == PlayerRole.TANK) {
+//							endGame();
+//						}
+//					}
 				}catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -231,13 +247,13 @@ public class GameServer {
 			lastFrame = time;
 		}
 		
-		return false;
+		//return false;
 	}
 
 	public GameObjectCollection getGameObjectCollection() {
 		return collection;
 	}
-
+	
 	public GameConnection createConnection() {
 		String identifier;
 		boolean matches = false;
@@ -252,9 +268,10 @@ public class GameServer {
 		
 		clients.add(client);
 		
+		conn.setServerReadyCallable(() -> running);
 		conn.setGameInformationCallable(() -> {
 			return new GameInformation(clients.stream()
-					.map(c -> new Player(c.getIdentifier(), c.isReady()))
+					.map(c -> c.convertToPlayer())
 					.collect(Collectors.toList()));
 		});
 		
@@ -262,14 +279,11 @@ public class GameServer {
 			client.setReady(r);
 			serverWindow.publishMessage( "Player"+ (r ? "":" not") +" ready: "+client.getIdentifier());
 			
+			//inicia o jogo se todos estiverem prontos
 			if (clients.stream().allMatch(c -> c.isReady())) {
 				executor.submit(this::startGame);
 			}
 		});
-		
-		if (clients.size() == 1) {
-			//beginExecution();
-		}
 		
 		serverWindow.publishMessage("Player connected: "+identifier);
 		

@@ -18,6 +18,7 @@ import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.RemoteInterface;
+import br.univali.game.util.FloatVec;
 import br.univali.game.window.GameWindow;
 import br.univali.game.window.RenderMode;
 import br.univali.game.window.WindowFactory;
@@ -178,6 +179,17 @@ public class GameClient {
 		/*if (collection.getTank().getPowerupTime() > 0) {
 			hud.drawPowerupBar(collection.getTank().getPowerupTime());
 		}*/
+		
+		
+		try {
+			FloatVec pos = connection.getObject().getPosition();
+			renderer.setColor(1, 0, 0, 1);
+			renderer.drawRectangle(pos.x, pos.y, 30, 30);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	private float calculateCannonBarFraction() {

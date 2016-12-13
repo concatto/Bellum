@@ -149,7 +149,7 @@ public class Spawner {
 		return enemy;
 	}
 	
-	public CombatObject spawnTank() {
+	public PlayerTank spawnTank() {
 		PlayerTank tank = new PlayerTank();
 		prepareObject(tank, ObjectType.PLAYER_TANK);
 		
