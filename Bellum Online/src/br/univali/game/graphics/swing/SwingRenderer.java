@@ -3,7 +3,6 @@ package br.univali.game.graphics.swing;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -13,6 +12,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
+import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatVec;
@@ -118,8 +118,8 @@ public class SwingRenderer implements Renderer {
 	}
 
 	@Override
-	public void setFont(Font font) {
-		graphics.setFont(font);
+	public void setFont(GameFont font) {
+		graphics.setFont(font.getFont());
 	}
 
 	@Override

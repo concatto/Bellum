@@ -34,6 +34,7 @@ import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
 
 public class GameServer {
+	private static final int HEARTBEAT_TIMEOUT = 3000;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
 	private ServerWindow serverWindow;	
@@ -129,7 +130,7 @@ public class GameServer {
 		heartbeatExecutor.scheduleAtFixedRate(() -> {
 			for (ListIterator<Client> it = clients.listIterator(); it.hasNext(); ) {
 				Client c = it.next();
-				if (System.currentTimeMillis() - c.getConnection().getLastHeartbeat() > 5000) {
+				if (System.currentTimeMillis() - c.getConnection().getLastHeartbeat() > HEARTBEAT_TIMEOUT) {
 					it.remove();
 					this.serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
 					//Provavelmente algo mais acontecerá quando isso ocorrer.

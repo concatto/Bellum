@@ -47,22 +47,30 @@ public class GameConnectionImpl implements GameConnection {
 	
 	@Override
 	public void publishKeyboardEvent(KeyboardEvent event) throws RemoteException {
-		keyboardConsumer.accept(event);
+		if (keyboardConsumer != null) {
+			keyboardConsumer.accept(event);
+		}
 	}
 
 	@Override
 	public void publishMouseEvent(MouseEvent event) throws RemoteException {
-		mouseConsumer.accept(event);
+		if (mouseConsumer != null) {
+			mouseConsumer.accept(event);
+		}
 	}
 
 	@Override
 	public void publishMousePosition(IntVec position) throws RemoteException {
-		positionConsumer.accept(position);
+		if (positionConsumer != null) {
+			positionConsumer.accept(position);
+		}
 	}
 	
 	@Override
 	public void publishReady(boolean ready) throws RemoteException {
-		readyConsumer.accept(ready);
+		if (readyConsumer != null) {
+			readyConsumer.accept(ready);
+		}
 	}
 
 	@Override

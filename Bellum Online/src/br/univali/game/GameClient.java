@@ -39,6 +39,7 @@ public class GameClient {
 		MainMenu menu = new MainMenu(window);
 		
 		window.display();
+		renderer = window.getRenderer();
 		
 		boolean connectionError = false;
 		do {
@@ -74,7 +75,7 @@ public class GameClient {
 				e2.printStackTrace();
 				menu.displayConnectionFailure();
 				connection = null;
-				heartbeatFuture.cancel(false);
+				heartbeatFuture.cancel(true);
 				connectionError = true;
 			}
 		} while (connectionError);
@@ -129,9 +130,19 @@ public class GameClient {
 				
 				//System.out.println("Took " + (System.currentTimeMillis() - start));
 			}
-		},"Mouse position sender, at GameClient.java").start();
+		},"ServerCommunicator").start();
 		
-		while (true) {			
+		while (true) {
+			try {
+				Thread.sleep(8);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			if (collection == null) {
+				continue;
+			}
+			
 			drawGame();
 			renderer.draw();
 			

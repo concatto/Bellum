@@ -33,6 +33,7 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
+import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatRect;
@@ -52,6 +53,13 @@ public class GLRenderer implements Renderer {
 		this.window = window;
 		setRotation(0);
 		setScale(new FloatVec(1, 1));
+		
+		//Precarregamento de fontes
+		for (GameFont font : GameFont.values()) {
+			setFont(font);
+		}
+		
+		currentFont = null;
 	}
 	
 	private void applyTransforms(float x, float y, float width, float height) {
@@ -154,12 +162,13 @@ public class GLRenderer implements Renderer {
 	}
 
 	@Override
-	public void setFont(Font font) {
-		if (fonts.containsKey(font)) {
-			currentFont = fonts.get(font);
+	public void setFont(GameFont font) {
+		Font f = font.getFont();
+		if (fonts.containsKey(f)) {
+			currentFont = fonts.get(f);
 		} else {
-			TrueTypeFont ttf = new TrueTypeFont(font);
-			fonts.put(font, ttf);
+			TrueTypeFont ttf = new TrueTypeFont(f);
+			fonts.put(f, ttf);
 			currentFont = ttf;
 		}
 	}

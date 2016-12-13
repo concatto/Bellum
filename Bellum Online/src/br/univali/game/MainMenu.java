@@ -1,6 +1,6 @@
 package br.univali.game;
 
-import br.univali.game.graphics.Renderer;
+import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;
@@ -8,7 +8,6 @@ import br.univali.game.window.GameWindow;
 
 public class MainMenu extends GameScreen {
 	private Texture background;
-	private long time = 0;
 	
 	public MainMenu(GameWindow window) {
 		super(window);
@@ -17,9 +16,7 @@ public class MainMenu extends GameScreen {
 	
 	public void displayWelcome() {
 		boolean running = true;
-		time = 0;
 		
-		renderer.setFont(Renderer.LARGE_FONT);
 		
 		while (running) {			
 			renderer.setColor(0, 0, 0);
@@ -28,25 +25,17 @@ public class MainMenu extends GameScreen {
 			drawCentralizedTexture(background);
 			drawOverlay(0.6f);
 			
-			if (window.isKeyPressed(Keyboard.ENTER) || time != 0) {
-				if (time == 0) {
-					time = System.currentTimeMillis();
-				} else {
-					long delta = System.currentTimeMillis() - time;
-					double remaining = 3 - (delta / 1000.0);
-					if (remaining < 0) {
-						running = false;
-					} else {
-						String text = String.format("Starting in %.2f", remaining);
-						
-						renderer.setColor(0.58f, 0.82f, 0.95f);
-						centralizeXAndDraw(text, 50);
-					}
-				}
-			} else {
-				renderer.setColor(0.58f, 0.82f, 0.95f);
-				centralizeXAndDraw("Press ENTER to start", 50);
+			if (window.isKeyPressed(Keyboard.ENTER)) {
+				running = false;
+				break;
 			}
+			
+			renderer.setColor(1, 1, 1);
+			renderer.setFont(GameFont.GIGANTIC);
+			centralizeXAndDraw("BELLUM", 50);
+			
+			renderer.setFont(GameFont.MEDIUM);
+			centralizeXAndDraw("Press ENTER to start", 400);
 			
 			renderer.draw();
 		}

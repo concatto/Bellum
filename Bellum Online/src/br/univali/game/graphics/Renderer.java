@@ -1,15 +1,10 @@
 package br.univali.game.graphics;
 
-import java.awt.Font;
-
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;
 import br.univali.game.util.IntVec;
 
-public interface Renderer {
-	public static final Font LARGE_FONT = new Font("Helvetica", Font.PLAIN, 40);
-	public static final Font MEDIUM_FONT = new Font("Helvetica", Font.PLAIN, 28);
-	
+public interface Renderer {	
 	void clear();
 	void setColor(float red, float green, float blue);
 	void setColor(float red, float green, float blue, float alpha);
@@ -18,7 +13,7 @@ public interface Renderer {
 	//void drawLine(int x1, int x2, int y1, int y2);
 	//void drawLine(int x1, int x2, int y1, int y2, int thickness);
 	
-	void setFont(Font font);
+	void setFont(GameFont font);
 	void drawText(String text, float x, float y);
 	IntVec computeTextSize(String text);
 	void setScale(FloatVec scale);
