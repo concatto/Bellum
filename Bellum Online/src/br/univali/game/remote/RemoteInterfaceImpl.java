@@ -24,7 +24,7 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 			GameConnection conn = server.createConnection();
 			return (GameConnection) UnicastRemoteObject.exportObject(conn, 8080);
 		} catch (Exception e) {
-			throw new RemoteException("Connection callable failed to execute");
+			throw new RemoteException("Connection creation failed to execute");
 		}
 	}
 }

@@ -8,6 +8,7 @@ import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Texture;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.Player;
+import br.univali.game.server.GameServer;
 import br.univali.game.util.Countdown;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.GameWindow;
@@ -19,7 +20,7 @@ public class WaitingRoom extends GameScreen {
 	private boolean ready = false;
 	private GameConnection connection;
 	private boolean allReady = false;
-	private Countdown countdown = new Countdown(5000);
+	private Countdown countdown = new Countdown(GameServer.PREPARE_TIME);
 	
 	public WaitingRoom(GameWindow window, GameConnection connection) {
 		super(window);

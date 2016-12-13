@@ -4,8 +4,8 @@ import br.univali.game.behaviour.MotionBehaviour;
 
 public class Enemy extends CombatObject {
 	private MotionBehaviour behaviour;
-	private long lastShot = 0;
 	private long shotInterval = 0;
+	private long lastShot = 0;
 	
 	public Enemy() {
 

@@ -55,7 +55,7 @@ public class GameObjectCollection implements Serializable {
 		
 		return drawables;
 	}
-
+	
 	public void addEffect(DrawableObject effect) {
 		effects.add(effect);
 	}

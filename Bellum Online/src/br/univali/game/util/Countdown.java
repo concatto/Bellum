@@ -8,6 +8,12 @@ public class Countdown {
 		this.duration = duration;
 	}
 
+	public static Countdown createAndStart(long duration) {
+		Countdown c = new Countdown(duration);
+		c.start();
+		return c;
+	}
+	
 	public void start() {
 		startTime = System.currentTimeMillis();
 	}

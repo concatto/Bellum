@@ -2,6 +2,7 @@ package br.univali.game.controllers;
 
 import br.univali.game.GameConstants;
 import br.univali.game.Spawner;
+import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerHelicopter;
 import br.univali.game.util.Direction;
@@ -11,10 +12,11 @@ public class HelicopterController extends PlayerController {
 
 	private static final int upKey = 'W';
 	
-	private PlayerHelicopter helicopter;
+	private Enemy helicopter;
 	
 	public HelicopterController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
 		super(spawner,collection,windowSize);
+		helicopter = collection.getEnemies().get(0);
 //		helicopter = collection.getHelicopter();
 	}
 	
@@ -28,8 +30,21 @@ public class HelicopterController extends PlayerController {
 	@Override
 	public Direction computeDirection() {
 		boolean up = pressedKeys.contains(upKey);
-		/// ??
-		return super.computeDirection();
+
+		switch (super.computeDirection())
+		{
+		case NONE:
+			if ( up )
+				return Direction.UP;
+			break;
+		case LEFT:
+			return ( up ? Direction.UP_LEFT : Direction.LEFT );
+		case RIGHT:
+			return ( up ? Direction.UP_RIGHT : Direction.RIGHT );
+		default:
+			break;
+		}
+		return Direction.DOWN;
 	}
 
 	private void handleWeapons() {
@@ -47,19 +62,27 @@ public class HelicopterController extends PlayerController {
 	protected void handleMovement() {
 		Direction direction = computeDirection();
 		
-		if (direction == Direction.NONE) {
-			helicopter.setMotionVector(0, 0);
+		
+		float y = 1;
+		if (direction == Direction.UP_LEFT && helicopter.getY() > 0 ){
+			y = -1;
+			direction = Direction.LEFT;
+		} else if (direction == Direction.UP_RIGHT && helicopter.getY() + helicopter.getWidth() < windowSize.x){
+			y = -1;
+			direction = Direction.RIGHT;
 		} else {
-			helicopter.setDirection(direction);
-			float y = helicopter.getMotionVector().y;
-			
-			if (direction == Direction.LEFT && helicopter.getX() > 0) {
-				helicopter.setMotionVector(-1, y);
-			} else if (direction == Direction.RIGHT && helicopter.getX() + helicopter.getWidth() < windowSize.x) {
-				helicopter.setMotionVector(1, helicopter.getMotionVector().y);	
-			} else {
-				helicopter.setMotionVector(0, y);
-			}
+			if ( direction != Direction.DOWN )
+				y = 0;
+		}
+		
+		helicopter.setDirection(direction);
+		
+		if (direction == Direction.LEFT && helicopter.getX() > 0) {
+			helicopter.setMotionVector(-1, y);
+		} else if (direction == Direction.RIGHT && helicopter.getX() + helicopter.getWidth() < windowSize.x) {
+			helicopter.setMotionVector(1, y);
+		} else {
+			helicopter.setMotionVector(0, y);
 		}
 	}
 }

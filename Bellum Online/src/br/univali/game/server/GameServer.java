@@ -22,19 +22,25 @@ import br.univali.game.controllers.HelicopterController;
 import br.univali.game.controllers.LogicController;
 import br.univali.game.controllers.PhysicsController;
 import br.univali.game.controllers.TankController;
+import br.univali.game.event.input.KeyboardEvent;
+import br.univali.game.event.input.InputEventType;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.GameInformation;
 import br.univali.game.remote.Player;
+import br.univali.game.remote.RemoteConsumer;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
+import br.univali.game.util.Countdown;
+import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
 
 public class GameServer {
 	private static final int HEARTBEAT_TIMEOUT = 3000;
+	public static final long PREPARE_TIME = 5000;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
 	private ServerWindow serverWindow;	
@@ -85,13 +91,7 @@ public class GameServer {
 		
 		launchHeartbeat();
 		
-		spawner.spawnTank();
-		serverWindow.publishMessage("Creating controllers...");		
-		
-		logic = new LogicController(collection, spawner, worldSize);
-		physics = new PhysicsController(collection, logic.getGroundLevel());
-		animation = new AnimationController(collection, textureManager);	
-		serverWindow.publishMessage("Controllers created.");
+		//startGame();
 		
 //		while (true) {
 //			renderer.setColor(0.5f, 0.5f, 0.5f);
@@ -138,29 +138,51 @@ public class GameServer {
 			}
 		}, 0, 1, TimeUnit.SECONDS);
 	}
+
+	private void startGame() {
+		serverWindow.publishMessage("Starting game...");
+		
+		Countdown c = Countdown.createAndStart(PREPARE_TIME);
+		while (!c.finished());
+
+		serverWindow.publishMessage("Spawning players...");
+		spawner.spawnTank();
+		for (int i = 0; i < clients.size()-1; i++){
+			spawner.spawnHelicopter(new FloatVec(10,10));
+		}
+		serverWindow.publishMessage("Players spawned.");
+		
+		serverWindow.publishMessage("Creating controllers...");
+		
+		logic = new LogicController(collection, spawner, worldSize);
+		physics = new PhysicsController(collection, logic.getGroundLevel());
+		animation = new AnimationController(collection, textureManager);	
+		serverWindow.publishMessage("Controllers created.");
+		
+		beginExecution();
+		
+	}
 	
 	private void beginExecution() {
 		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
-		
+
+		serverWindow.publishMessage("Creating players controllers...");
 		for (int i = 0; i < clients.size(); i++) {		
-			Client conn = clients.get(i);
+			Client c = clients.get(i);
 			
 			if (i == tankIndex) {
-				conn.setController(new TankController(spawner, collection, worldSize));
+				c.setController(new TankController(spawner, collection, worldSize));
 			} else {
-				conn.setController(new HelicopterController(spawner, collection, worldSize));
+				c.setController(new HelicopterController(spawner, collection, worldSize));
 			}
-			
-			i++;
 		}
+		serverWindow.publishMessage("Players controllers created.");
 		
-		executor.submit(() -> {
-			running = true;
-			
-			while (running) {
-				beginMainLoop();
-			}
-		});
+		running = true;
+		
+		while (running) {
+			beginMainLoop();
+		}
 	}
 	
 	/**
@@ -168,6 +190,8 @@ public class GameServer {
 	 * @return true se o jogador morreu.
 	 */
 	public boolean beginMainLoop() {
+		serverWindow.publishMessage("Game started.");
+		
 		lastFrame = System.nanoTime();
 		
 		while (running) {		
@@ -178,7 +202,8 @@ public class GameServer {
 			
 			logic.cleanupBullets();
 			
-			logic.tryGenerateEnemy();
+			//logic.tryGenerateEnemy();
+			
 			logic.tryGenerateHealth();
 			logic.tryGenerateSpecial();
 			
@@ -236,6 +261,10 @@ public class GameServer {
 		conn.setReadyConsumer(r -> {
 			client.setReady(r);
 			serverWindow.publishMessage( "Player"+ (r ? "":" not") +" ready: "+client.getIdentifier());
+			
+			if (clients.stream().allMatch(c -> c.isReady())) {
+				executor.submit(this::startGame);
+			}
 		});
 		
 		if (clients.size() == 1) {

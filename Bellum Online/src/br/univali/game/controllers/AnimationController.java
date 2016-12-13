@@ -21,6 +21,7 @@ public class AnimationController {
 		List<DrawableObject> toRemove = new ArrayList<>();
 		
 		for (DrawableObject object : collection.getDrawableObjects()) {
+			
 			Texture tex = manager.getObjectTexture(object.getType());
 			
 			if (tex.getFrames().size() <= 1) continue;
