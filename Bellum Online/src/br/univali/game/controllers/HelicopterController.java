@@ -77,6 +77,8 @@ public class HelicopterController extends PlayerController {
 				y = 0;
 		}
 		
+		y *= 0.01;
+		
 		helicopter.setDirection(direction);
 		
 		if (direction == Direction.LEFT && helicopter.getX() > 0) {

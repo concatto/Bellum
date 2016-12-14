@@ -1,6 +1,8 @@
 package br.univali.game.util;
 
-public class Countdown {
+import java.io.Serializable;
+
+public class Countdown implements Serializable {
 	private long duration;
 	private long startTime;
 	

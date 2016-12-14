@@ -23,8 +23,6 @@ import br.univali.game.controllers.HelicopterController;
 import br.univali.game.controllers.LogicController;
 import br.univali.game.controllers.PhysicsController;
 import br.univali.game.controllers.TankController;
-import br.univali.game.event.input.KeyboardEvent;
-import br.univali.game.event.input.InputEventType;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;
@@ -33,11 +31,8 @@ import br.univali.game.objects.PlayerTank;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.GameInformation;
-import br.univali.game.remote.Player;
-import br.univali.game.remote.RemoteConsumer;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
-import br.univali.game.util.Countdown;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
@@ -134,16 +129,18 @@ public class GameServer {
 		heartbeatExecutor.scheduleAtFixedRate(() -> {
 			for (ListIterator<Client> it = clients.listIterator(); it.hasNext(); ) {
 				Client c = it.next();
-				if (System.currentTimeMillis() - c.getConnection().getLastHeartbeat() > HEARTBEAT_TIMEOUT) {
+				
+				long delta = System.currentTimeMillis() - c.getConnection().getLastHeartbeat();
+				if (delta > HEARTBEAT_TIMEOUT) {
 					it.remove();
-					this.serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
+					serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
 					//Provavelmente algo mais acontecerá quando isso ocorrer.
 				}
 			}
 		}, 0, 1, TimeUnit.SECONDS);
 	}
 
-	private void startGame() {
+	private void prepareGame() {
 		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
 
 		serverWindow.publishMessage("Creating player controllers...");
@@ -154,13 +151,13 @@ public class GameServer {
 			if (i == tankIndex) {	
 				PlayerTank tank = spawner.spawnTank();
 				
-				c.setObject(tank);
+				collection.addPlayerObject(c.getIdentifier(), tank);
 				c.setController(new TankController(spawner, collection, worldSize, tank));
 				c.getConnection().setRole(PlayerRole.TANK);
 			} else {
-				Enemy helicopter = spawner.spawnHelicopter(new FloatVec(0, 0));
+				Enemy helicopter = spawner.spawnHelicopter(new FloatVec(50 + (i * 50), 50));
 				
-				c.setObject(helicopter);
+				collection.addPlayerObject(c.getIdentifier(), helicopter);
 				c.setController(new HelicopterController(spawner, collection, worldSize, helicopter));
 				c.getConnection().setRole(PlayerRole.HELICOPTER);
 			}
@@ -188,7 +185,7 @@ public class GameServer {
 		running = true;
 		
 		while (running) {
-			beginMainLoop();
+			beginGame();
 		}
 		
 	}
@@ -197,57 +194,69 @@ public class GameServer {
 	 * Inicia o loop principal do jogo.
 	 * @return true se o jogador morreu.
 	 */
-	public boolean beginMainLoop() {
+	public boolean beginGame() {
 		serverWindow.publishMessage("Game started.");
 		
 		lastFrame = System.nanoTime();
 		
-		while (true) {		
-			long time = System.nanoTime();
-			float delta = (float) ((time - lastFrame) / 1E6);
-			
-			//serverWindow.publishMessage("FPS: " + (1000f / delta) + " (Rendering took " + delta + " ms).");
-			
-			logic.cleanupBullets();
-			
-			//logic.tryGenerateEnemy();
-			
-			logic.tryGenerateHealth();
-			logic.tryGenerateSpecial();
-			
-			for (Client c : clients) {
-				try {
+		while (true) {
+			try {
+				long time = System.nanoTime();
+				float delta = (float) ((time - lastFrame) / 1E6);
+				
+				//serverWindow.publishMessage("FPS: " + (1000f / delta) + " (Rendering took " + delta + " ms).");
+				
+				logic.cleanupBullets();
+				
+				//logic.tryGenerateEnemy();
+				
+				logic.tryGenerateHealth();
+				logic.tryGenerateSpecial();
+				
+				for (Client c : clients) {
 					c.getController().update(delta);
-					
-//					if (c.isDead()) {
-//						if (c.getRole() == PlayerRole.HELICOPTER) {
-//							respawnHelicopter(c);
-//						} else if (c.getRole() == PlayerRole.TANK) {
-//							endGame();
-//						}
-//					}
-				}catch(Exception e) {
-					e.printStackTrace();
 				}
+				
+				logic.updateEnemies(delta);
+				physics.updatePositions(delta);
+				
+				logic.handleEnemyCollisions(physics.checkEnemyCollisions());
+				logic.handleGroundCollisions(physics.checkGroundCollisions());
+				logic.handlePlayerCollisions(physics.checkPlayerCollisions());
+				logic.handlePickupCollisions(physics.checkPickupCollisions());
+			
+				for (Client c : clients) {
+					CombatObject obj = collection.getPlayerObject(c.getIdentifier());
+					
+					
+					if (obj.shouldRespawn()) {
+						if (c.getRole() == PlayerRole.HELICOPTER) {
+							logic.respawnHelicopter(obj);
+						}
+					}
+					
+					if (obj.getHealth() <= 0 && !obj.isRespawning()) {
+						if (c.getRole() == PlayerRole.HELICOPTER) {
+							obj.prepareRespawn(3000);
+						} else if (c.getRole() == PlayerRole.TANK) {
+							terminateGame();
+						}
+					}
+				}
+				
+				animation.updateAnimations(delta);
+				lastFrame = time;
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			
-			logic.updateEnemies(delta);
-			physics.updatePositions(delta);
-			
-			logic.handleEnemyCollisions(physics.checkEnemyCollisions());
-			logic.handleGroundCollisions(physics.checkGroundCollisions());
-			logic.handlePlayerCollisions(physics.checkPlayerCollisions());
-			logic.handlePickupCollisions(physics.checkPickupCollisions());
-		
-			if (collection.getTank().getHealth() <= 0) {
-				//return true;
-			}
-			
-			animation.updateAnimations(delta);
-			lastFrame = time;
 		}
 		
 		//return false;
+	}
+
+	private void terminateGame() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public GameObjectCollection getGameObjectCollection() {
@@ -281,7 +290,7 @@ public class GameServer {
 			
 			//inicia o jogo se todos estiverem prontos
 			if (clients.stream().allMatch(c -> c.isReady())) {
-				executor.submit(this::startGame);
+				executor.submit(this::prepareGame);
 			}
 		});
 		

@@ -131,12 +131,12 @@ public class SwingWindow extends GameWindow {
 	
 	@Override
 	public void onMouseEvent(Consumer<MouseEvent> action) {
-		
+		this.mouseAction = action;
 	}
 
 	@Override
 	public void onKeyboardEvent(Consumer<KeyboardEvent> action) {
-		
+		this.keyAction = action;
 	}
 	
 	private static int adaptKey(KeyEvent e) {

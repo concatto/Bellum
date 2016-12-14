@@ -6,7 +6,6 @@ import java.util.concurrent.Callable;
 import br.univali.game.PlayerRole;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
-import br.univali.game.objects.CombatObject;
 import br.univali.game.util.IntVec;
 
 public class GameConnectionImpl implements GameConnection {
@@ -20,7 +19,6 @@ public class GameConnectionImpl implements GameConnection {
 	private Callable<Boolean> serverReadyCallable;
 	private PlayerRole role = PlayerRole.NONE;
 	private String identifier;
-	private CombatObject object;
 	
 	public GameConnectionImpl(String identifier) {
 		this.identifier = identifier;
@@ -56,10 +54,6 @@ public class GameConnectionImpl implements GameConnection {
 	
 	public long getLastHeartbeat() {
 		return lastHeartbeat;
-	}
-	
-	public void setObject(CombatObject object) {
-		this.object = object;
 	}
 	
 	@Override
@@ -123,10 +117,5 @@ public class GameConnectionImpl implements GameConnection {
 	@Override
 	public PlayerRole getRole() throws RemoteException {
 		return role;
-	}
-	
-	@Override
-	public CombatObject getObject() throws RemoteException {
-		return object;
 	}
 }

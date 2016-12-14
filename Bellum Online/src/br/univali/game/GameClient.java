@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 import br.univali.game.controllers.DrawingController;
 import br.univali.game.controllers.HUDController;
+import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.TextureManager;
+import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.RemoteInterface;
@@ -41,7 +43,7 @@ public class GameClient {
 		
 		window.display();
 		renderer = window.getRenderer();
-		
+
 		boolean connectionError = false;
 		do {
 			do {
@@ -98,7 +100,7 @@ public class GameClient {
 		
 		window.display();
 		
-		window.onKeyboardEvent(event -> { 
+		window.onKeyboardEvent(event -> {
 			try {
 				connection.publishKeyboardEvent(event);
 			} catch (RemoteException e) {
@@ -116,7 +118,6 @@ public class GameClient {
 		
 		new Thread(() -> {
 			while (true) {
-				long start = System.currentTimeMillis();
 				try {
 					connection.publishMousePosition(window.getMousePosition());
 					
@@ -128,8 +129,6 @@ public class GameClient {
 				} catch (RemoteException | InterruptedException e1) {
 					e1.printStackTrace();
 				}
-				
-				//System.out.println("Took " + (System.currentTimeMillis() - start));
 			}
 		},"ServerCommunicator").start();
 		
@@ -145,11 +144,29 @@ public class GameClient {
 			}
 			
 			drawGame();
-			renderer.draw();
 			
-			if (collection.getTank().getHealth() <= 0) {
+			
+			try {
+				CombatObject object = collection.getPlayerObject(connection.getIdentifier());
 				
+				if (connection.getRole() == PlayerRole.HELICOPTER) {
+					if (object.isDead()) {
+						renderer.setColor(0.3f, 0.3f, 0.3f, 0.7f);
+						renderer.drawRectangle(0, 0, window.getWidth(), window.getHeight());
+						renderer.setFont(GameFont.GIGANTIC);
+						renderer.setColor(1, 1, 1);
+						
+						double time = object.getRemainingRespawnTime() / 1000.0;
+						renderer.drawText(String.format("Respawning in %.2f", time), 20, 20);
+					}
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
 			}
+			
+			
+			
+			renderer.draw();
 		}
 	}
 	
@@ -182,14 +199,13 @@ public class GameClient {
 		
 		
 		try {
-			FloatVec pos = connection.getObject().getPosition();
+			FloatVec pos = collection.getPlayerObject(connection.getIdentifier()).getPosition();
 			renderer.setColor(1, 0, 0, 1);
 			renderer.drawRectangle(pos.x, pos.y, 30, 30);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 	
 	private float calculateCannonBarFraction() {

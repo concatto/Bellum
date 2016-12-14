@@ -9,13 +9,11 @@ public class Player implements Serializable {
 	private String name;
 	private PlayerRole role;
 	private boolean ready;
-	private CombatObject object;
 	
-	public Player(String name, PlayerRole role, boolean ready, CombatObject object) {
+	public Player(String name, PlayerRole role, boolean ready) {
 		this.name = name;
 		this.role = role;
 		this.ready = ready;
-		this.object = object;
 	}
 	
 	public boolean isReady() {
@@ -28,9 +26,5 @@ public class Player implements Serializable {
 	
 	public PlayerRole getRole() {
 		return role;
-	}
-	
-	public CombatObject getObject() {
-		return object;
 	}
 }

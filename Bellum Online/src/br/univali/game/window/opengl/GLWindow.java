@@ -35,7 +35,6 @@ public class GLWindow extends GameWindow {
 		
 		long monitor = GLFW.glfwGetPrimaryMonitor();
 		
-		@SuppressWarnings("resource")
 		GLFWVidMode mode = GLFW.glfwGetVideoMode(monitor);
 		
 		window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);

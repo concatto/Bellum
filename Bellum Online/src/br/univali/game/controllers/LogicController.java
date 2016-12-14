@@ -28,13 +28,12 @@ public class LogicController {
 	private GameObjectCollection collection;
 	private Spawner spawner;
 	private IntVec windowSize;
-	private long tempExe = 0;
+	private long enemyInterval = 0;
 	private long lastSpawn = 0;
 	private float enemyCount = Float.MAX_VALUE;
 	private float groundLevel;
 	private long lastSpecial;
 	private long lastHealth;
-	private int kills = 0;
 	private long healthPerSecond = 0;
 	private long specialPerSecond = 0;
 	
@@ -76,9 +75,10 @@ public class LogicController {
 			
 			if (target.getHealth() <= 0) {
 				spawner.spawnExplosion(Geometry.center(target.getBoundingBox()));
-				collection.removeEnemy(target);	
-				//SoundEffect.ENEMYDEAD.play();			
-				kills ++;
+				//REMOVE ISSO LOGO
+				if (target.getBehaviour() != null) {
+					collection.removeEnemy(target);
+				}
 			}
 			
 			terminateProjectile(origin);
@@ -162,10 +162,10 @@ public class LogicController {
 	}
 	
 	public void updateEnemies(float delta) {
-		for (Enemy enemy : collection.getEnemies()) {
+		collection.getEnemies().stream().filter(e -> e.getBehaviour() != null).forEach(enemy -> {
 			updateEnemyMotionVector(enemy, delta);
 			updateEnemyShot(enemy);
-		}
+		});
 	}
 	
 	private void updateEnemyShot(Enemy enemy) {
@@ -179,7 +179,7 @@ public class LogicController {
 		}
 	}
 	
-	private void updateEnemyMotionVector(Enemy enemy, float delta) {
+	private void updateEnemyMotionVector(Enemy enemy, float delta) {		
 		FloatVec next = enemy.getBehaviour().computeNextVector(delta);
 		enemy.setMotionVector(next);
 		
@@ -236,8 +236,8 @@ public class LogicController {
 		
 		if (collection.getEnemies().size() >= enemyCount) {
 			lastSpawn = System.currentTimeMillis();
-		} else if (delta > tempExe) {
-			tempExe = (long)(Utils.generateRandom(0.6f, 4.4f)*800);
+		} else if (delta > enemyInterval) {
+			enemyInterval = (long)(Utils.generateRandom(0.6f, 4.4f)*800);
 			enemyCount = Utils.generateRandom(3, 8);
 			lastSpawn = System.currentTimeMillis();
 			
@@ -286,8 +286,9 @@ public class LogicController {
 	public float getGroundLevel() {
 		return groundLevel;
 	}
-	
-	public int getKills(){
-		return kills;
+
+	public void respawnHelicopter(CombatObject helicopter) {
+		helicopter.respawn();
+		helicopter.setPosition(new FloatVec(100, 100));
 	}
 }

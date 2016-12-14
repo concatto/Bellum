@@ -3,7 +3,9 @@ package br.univali.game.objects;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameObjectCollection implements Serializable {
 	private List<Enemy> enemies = new ArrayList<>();
@@ -11,6 +13,15 @@ public class GameObjectCollection implements Serializable {
 	private List<DrawableObject> effects = new ArrayList<>();
 	private List<DrawableObject> pickups = new ArrayList<>();
 	private PlayerTank tank;
+	private Map<String, CombatObject> playerObjects = new HashMap<>();
+	
+	public void addPlayerObject(String identifier, CombatObject object) {
+		playerObjects.put(identifier, object);
+	}
+	
+	public CombatObject getPlayerObject(String identifier) {
+		return playerObjects.get(identifier);
+	}
 	
 	public void addEnemy(Enemy enemy) {
 		enemies.add(enemy);
