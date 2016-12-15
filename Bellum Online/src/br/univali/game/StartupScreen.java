@@ -6,10 +6,10 @@ import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;
 import br.univali.game.window.GameWindow;
 
-public class MainMenu extends GameScreen {
+public class StartupScreen extends BaseScreen {
 	private Texture background;
 	
-	public MainMenu(GameWindow window) {
+	public StartupScreen(GameWindow window) {
 		super(window);
 		this.background = Texture.load("images/menu_background.jpg");
 	}

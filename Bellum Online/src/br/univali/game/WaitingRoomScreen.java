@@ -14,7 +14,7 @@ import br.univali.game.util.Countdown;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.GameWindow;
 
-public class WaitingRoom extends GameScreen {
+public class WaitingRoomScreen extends BaseScreen {
 	private Texture background;
 	private Consumer<Boolean> readyConsumer;
 	private boolean previousEnter = true;
@@ -23,7 +23,7 @@ public class WaitingRoom extends GameScreen {
 	private boolean allReady = false;
 	private Countdown countdown = new Countdown(GameServer.PREPARE_TIME);
 	
-	public WaitingRoom(GameWindow window, GameConnection connection) {
+	public WaitingRoomScreen(GameWindow window, GameConnection connection) {
 		super(window);
 		
 		this.connection = connection;

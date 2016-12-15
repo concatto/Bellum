@@ -238,6 +238,7 @@ public class GameServer {
 					if (obj.getHealth() <= 0 && !obj.isRespawning()) {
 						if (c.getRole() == PlayerRole.HELICOPTER) {
 							obj.prepareRespawn(3000);
+							obj.setAffectedByGravity(true);
 						} else if (c.getRole() == PlayerRole.TANK) {
 							terminateGame();
 						}
@@ -286,7 +287,7 @@ public class GameServer {
 		
 		conn.setReadyConsumer(r -> {
 			client.setReady(r);
-			serverWindow.publishMessage( "Player"+ (r ? "":" not") +" ready: "+client.getIdentifier());
+			serverWindow.publishMessage("Player" + (r ? "" : " not") + " ready: " + client.getIdentifier());
 			
 			//inicia o jogo se todos estiverem prontos
 			if (clients.stream().allMatch(c -> c.isReady())) {

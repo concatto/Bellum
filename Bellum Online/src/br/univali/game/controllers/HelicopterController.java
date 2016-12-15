@@ -24,8 +24,11 @@ public class HelicopterController extends PlayerController {
 	
 	@Override
 	public void update(float delta) {
-		handleMovement();
-		handleWeapons();
+		//Talvez devesse estar mais acima no call stack
+		if (!helicopter.isDead()) {
+			handleMovement();
+			handleWeapons();
+		}
 	}
 
 	

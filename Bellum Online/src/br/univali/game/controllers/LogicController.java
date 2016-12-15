@@ -290,5 +290,6 @@ public class LogicController {
 	public void respawnHelicopter(CombatObject helicopter) {
 		helicopter.respawn();
 		helicopter.setPosition(new FloatVec(100, 100));
+		helicopter.setAffectedByGravity(false);
 	}
 }
