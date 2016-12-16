@@ -9,4 +9,6 @@ public interface Keyboard {
 	public static final int SPACE = 32;
 	public static final int CTRL = 17;
 	public static final int ENTER = '\n';
+	public static final int BACKSPACE = '\b';
+	public static final int UNKNOWN = -1;
 }

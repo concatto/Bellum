@@ -40,8 +40,6 @@ public class GLWindow extends GameWindow {
 		window = GLFW.glfwCreateWindow(width, height, "", MemoryUtil.NULL, MemoryUtil.NULL);
 		GLFW.glfwSetWindowPos(window, mode.width() / 2 - width / 2, mode.height() / 2 - height / 2);
 		
-		renderer = new GLRenderer(window);
-		
 		GLFW.glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
 			@Override
 			public void invoke(long window, double x, double y) {
@@ -52,26 +50,24 @@ public class GLWindow extends GameWindow {
 		GLFW.glfwMakeContextCurrent(window);
 		GL.createCapabilities();
 		
+		renderer = new GLRenderer(window);
+		
+		installListeners();
 		setTitle(title);
 	}
 	
-	@Override
-	public void display() {
-		GLFW.glfwShowWindow(window);
+	private void installListeners() {
+		GLFW.glfwSetKeyCallback(window, new GLFWKeyCallback() {
+			@Override
+			public void invoke(long window, int key, int scancode, int action, int mods) {
+				InputEventType type = (action != GLFW.GLFW_RELEASE) ? InputEventType.PRESS : InputEventType.RELEASE;
+				
+				for (Consumer<KeyboardEvent> consumer : keyboardConsumers) {
+					consumer.accept(new KeyboardEvent(GLKeyConverter.fromGL(key), type));
+				}
+			}
+		});
 		
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GL11.glOrtho(0, width, height, 0, -1, 1);
-	}
-
-	@Override
-	public IntVec getMousePosition() {		
-		return mousePosition;
-	}
-
-	@Override
-	public void onMouseEvent(Consumer<MouseEvent> mouseAction) {
 		GLFW.glfwSetMouseButtonCallback(window, new GLFWMouseButtonCallback() {
 			@Override
 			public void invoke(long window, int button, int action, int mods) {
@@ -86,21 +82,26 @@ public class GLWindow extends GameWindow {
 					b = MouseButton.MIDDLE;
 				}
 				
-				mouseAction.accept(new MouseEvent(b, type));
+				for (Consumer<MouseEvent> consumer : mouseConsumers) {
+					consumer.accept(new MouseEvent(b, type));
+				}
 			}
 		});
 	}
 
 	@Override
-	public void onKeyboardEvent(Consumer<KeyboardEvent> keyboardAction) {
-		GLFW.glfwSetKeyCallback(window, new GLFWKeyCallback() {
-			@Override
-			public void invoke(long window, int key, int scancode, int action, int mods) {
-				InputEventType type = (action != GLFW.GLFW_RELEASE) ? InputEventType.PRESS : InputEventType.RELEASE;
-				
-				keyboardAction.accept(new KeyboardEvent(GLKeyConverter.fromGL(key), type));
-			}
-		});
+	public void display() {
+		GLFW.glfwShowWindow(window);
+		
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+		GL11.glOrtho(0, width, height, 0, -1, 1);
+	}
+
+	@Override
+	public IntVec getMousePosition() {		
+		return mousePosition;
 	}
 
 	@Override

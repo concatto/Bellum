@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import br.univali.game.GameConstants;
 import br.univali.game.NameGenerator;
 import br.univali.game.PlayerRole;
 import br.univali.game.Spawner;
@@ -89,40 +90,6 @@ public class GameServer {
 		}
 		
 		launchHeartbeat();
-		
-		//startGame();
-		
-//		while (true) {
-//			renderer.setColor(0.5f, 0.5f, 0.5f);
-//			renderer.clear();
-//			renderer.setColor(0, 1, 0);
-//			renderer.setFont(new Font("Arial", Font.PLAIN, 32));
-//			renderer.drawText("Hello", 0, 0);
-//			renderer.draw();
-//		}
-		
-//		running = true;
-//		
-//		while (running) {
-//			logic.prepareGame();
-//	
-//			serverWindow.publishMessage("Displaying menu...");
-//			beginMenu();
-//			serverWindow.publishMessage("Done.");
-//			
-//			serverWindow.publishMessage("Beginning main loop...");
-//			boolean dead = beginMainLoop();
-//			
-//			if (dead) {
-//				displayDeathScreen();
-//			}
-//			
-//			try {
-//				collection.clear();
-//			} catch (RemoteException e) {
-//				e.printStackTrace();
-//			}
-//		}
 	}
 
 	private void launchHeartbeat() {
@@ -149,7 +116,7 @@ public class GameServer {
 			Client c = clients.get(i);
 			
 			if (i == tankIndex) {	
-				PlayerTank tank = spawner.spawnTank();
+				PlayerTank tank = spawner.spawnTank(worldSize.x / 2f, worldSize.y - GameConstants.GROUND_Y_OFFSET);
 				
 				collection.addPlayerObject(c.getIdentifier(), tank);
 				c.setController(new TankController(spawner, collection, worldSize, tank));
@@ -195,7 +162,7 @@ public class GameServer {
 	 * @return true se o jogador morreu.
 	 */
 	public boolean beginGame() {
-		serverWindow.publishMessage("Game started.");
+		serverWindow.publishMessage("Game starts.");
 		
 		lastFrame = System.nanoTime();
 		
@@ -208,8 +175,7 @@ public class GameServer {
 				
 				logic.cleanupBullets();
 				
-				//logic.tryGenerateEnemy();
-				
+				logic.tryGenerateEnemy();
 				logic.tryGenerateHealth();
 				logic.tryGenerateSpecial();
 				

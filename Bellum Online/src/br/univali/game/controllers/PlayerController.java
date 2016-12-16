@@ -58,7 +58,6 @@ public abstract class PlayerController {
 	}
 
 	public void handleMouse(MouseEvent e) {
-		System.out.println("Hi");
 		if (e.getType() == InputEventType.PRESS) {
 			pressedButtons.add(e.getButton());
 		} else {

@@ -111,10 +111,12 @@ public class WaitingRoomScreen extends BaseScreen {
 					username += " (playing as " + p.getRole() + ")";
 				}
 				
-				renderer.drawText(username, 50, 200 + (i * 50));
+				int y = 200 + (i * 50);
+				renderer.drawText(username, 50, y);
+				
 				if (self) {
 					IntVec tSize = renderer.computeTextSize(username);
-					renderer.drawRectangle(50, 200 + (i * 50) + tSize.y, tSize.x, 0.5f);
+					renderer.drawRectangle(50, y + tSize.y, tSize.x, 0.5f);
 				}
 			}
 		} catch (ConnectException ce) {
@@ -126,7 +128,7 @@ public class WaitingRoomScreen extends BaseScreen {
 		if (readyFlag) {
 			if (!allReady) {
 				countdown.start();
-				fadeOverlayTo(0.9f, 1000);
+				fadeOverlayTo(0.9f, 1500);
 			}
 			
 			allReady = true;

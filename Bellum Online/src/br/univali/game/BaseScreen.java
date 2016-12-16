@@ -1,5 +1,9 @@
 package br.univali.game;
 
+import java.util.function.Consumer;
+
+import br.univali.game.event.input.InputEventType;
+import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.graphics.Texture;
 import br.univali.game.util.FloatVec;
@@ -11,6 +15,8 @@ import br.univali.game.window.GameWindow;
 public abstract class BaseScreen {
 	protected GameWindow window;
 	protected Renderer renderer;
+	private Consumer<KeyboardEvent> captureConsumer;
+	private String capturedInput = "";
 	private float overlayAlpha = 1;
 	private float startingAlpha;
 	private float endingAlpha;
@@ -23,6 +29,20 @@ public abstract class BaseScreen {
 	public BaseScreen(GameWindow window) {
 		this.window = window;
 		this.renderer = window.getRenderer();
+		
+		captureConsumer = event -> {
+			int key = event.getKey();
+			
+			if (event.getType() == InputEventType.PRESS && key != Keyboard.UNKNOWN) {
+				if (key == Keyboard.BACKSPACE) {
+					if (!capturedInput.isEmpty()) {
+						capturedInput = capturedInput.substring(0, capturedInput.length() - 1);
+					}
+				} else if (key >= '.' && key <= 'Z') {
+					capturedInput += (char) key;
+				}
+			}
+		};
 	}
 
 	protected void centralizeAndDraw(String text) {
@@ -87,5 +107,22 @@ public abstract class BaseScreen {
 	protected void drawCentralizedTexture(Texture texture) {
 		FloatVec center = Geometry.centerVector(texture.getSize().toFloat(), window.getSize().toFloat());
 		renderer.drawTexture(texture, center.x, center.y);
+	}
+	
+	protected void beginInputCapture() {
+		clearCapturedInput();
+		window.addKeyboardEventConsumer(captureConsumer);
+	}
+	
+	protected void stopCapturingInput() {
+		window.removeKeyboardEventConsumer(captureConsumer);
+	}
+	
+	protected void clearCapturedInput() {
+		capturedInput = "";
+	}
+	
+	protected String getCapturedInput() {
+		return capturedInput;
 	}
 }

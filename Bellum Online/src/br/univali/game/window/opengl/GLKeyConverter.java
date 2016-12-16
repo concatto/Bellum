@@ -7,7 +7,7 @@ import br.univali.game.Keyboard;
 public abstract class GLKeyConverter {
 
 	public static int fromGL(int key) {
-		if (key >= '0' && key <= 'Z') {
+		if (key >= '.' && key <= 'Z') {
 			return key;
 		}
 		
@@ -27,13 +27,15 @@ public abstract class GLKeyConverter {
 			return Keyboard.SPACE;
 		case GLFW.GLFW_KEY_ENTER:
 			return Keyboard.ENTER;
+		case GLFW.GLFW_KEY_BACKSPACE:
+			return Keyboard.BACKSPACE;
 		}
 		
-		return -1;
+		return Keyboard.UNKNOWN;
 	}
 
 	public static int toGL(int key) {
-		if (key >= '0' && key <= 'Z') {
+		if (key >= '.' && key <= 'Z') {
 			return key;
 		}
 		
@@ -52,8 +54,10 @@ public abstract class GLKeyConverter {
 			return GLFW.GLFW_KEY_SPACE;
 		case Keyboard.ENTER:
 			return GLFW.GLFW_KEY_ENTER;
+		case Keyboard.BACKSPACE:
+			return GLFW.GLFW_KEY_BACKSPACE;
 		}
 		
-		return -1;
+		return Keyboard.UNKNOWN;
 	}
 }

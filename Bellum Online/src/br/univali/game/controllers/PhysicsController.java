@@ -100,7 +100,7 @@ public class PhysicsController {
 	private void updateObjectPosition(GameObject object, float delta) {
 		float groundDelta = object.getY() + object.getHeight() - groundLevel;
 		
-		FloatVec v = object.getMotionVector();		
+		FloatVec v = object.getMotionVector();
 		float coefficient = delta * object.getSpeed();
 		
 		object.setX(object.getX() + coefficient * v.x);
@@ -109,10 +109,10 @@ public class PhysicsController {
 			object.setY(groundLevel - object.getHeight());
 		} else {
 			object.setY(object.getY() + coefficient * v.y);
-		}
-		
-		if (object.isAffectedByGravity() && groundDelta < 0.01) {
-			object.setMotionVector(v.x, v.y + gravity * delta);
+			
+			if (object.isAffectedByGravity()) {
+				object.setMotionVector(v.x, v.y + gravity * delta);
+			}
 		}
 	}
 }

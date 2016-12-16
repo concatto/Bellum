@@ -30,8 +30,6 @@ public class SwingWindow extends GameWindow {
 	private JFrame window;
 	private JPanel mainPanel;
 	private Set<Integer> pressedKeys = new HashSet<>();
-	private Consumer<MouseEvent> mouseAction;
-	private Consumer<KeyboardEvent> keyAction;
 
 	public SwingWindow(String title, int width, int height) {
 		super(title, width, height);
@@ -61,22 +59,22 @@ public class SwingWindow extends GameWindow {
 
 	private void installListeners() {
 		mainPanel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent e) {
+			private void emitMouseEvent(java.awt.event.MouseEvent e, InputEventType type) {
 				MouseButton button = convertMouseButton(e.getButton());
 				
-				if (mouseAction != null) {
-					mouseAction.accept(new MouseEvent(button, InputEventType.PRESS));
+				for (Consumer<MouseEvent> consumer : mouseConsumers) {
+					consumer.accept(new MouseEvent(button, type));
 				}
 			}
 			
 			@Override
+			public void mousePressed(java.awt.event.MouseEvent e) {
+				emitMouseEvent(e, InputEventType.PRESS);
+			}
+			
+			@Override
 			public void mouseReleased(java.awt.event.MouseEvent e) {
-				MouseButton button = convertMouseButton(e.getButton());
-				
-				if (mouseAction != null) {
-					mouseAction.accept(new MouseEvent(button, InputEventType.RELEASE));
-				}
+				emitMouseEvent(e, InputEventType.RELEASE);
 			}
 		});
 		
@@ -85,10 +83,10 @@ public class SwingWindow extends GameWindow {
 			public void keyPressed(KeyEvent e) {
 				int key = adaptKey(e);
 				
-				if (pressedKeys.add(key)) {
-					if (keyAction != null) {
-						keyAction.accept(new KeyboardEvent(key, InputEventType.PRESS));
-					}
+				pressedKeys.add(key);
+				
+				for (Consumer<KeyboardEvent> consumer : keyboardConsumers) {
+					consumer.accept(new KeyboardEvent(key, InputEventType.PRESS));
 				}
 			}
 			
@@ -97,8 +95,8 @@ public class SwingWindow extends GameWindow {
 				int key = adaptKey(e);
 				pressedKeys.remove(key);
 				
-				if (keyAction != null) {
-					keyAction.accept(new KeyboardEvent(key, InputEventType.RELEASE));
+				for (Consumer<KeyboardEvent> consumer : keyboardConsumers) {
+					consumer.accept(new KeyboardEvent(key, InputEventType.RELEASE));
 				}
 			}
 		});
@@ -129,19 +127,9 @@ public class SwingWindow extends GameWindow {
 		return null;
 	}
 	
-	@Override
-	public void onMouseEvent(Consumer<MouseEvent> action) {
-		this.mouseAction = action;
-	}
-
-	@Override
-	public void onKeyboardEvent(Consumer<KeyboardEvent> action) {
-		this.keyAction = action;
-	}
-	
 	private static int adaptKey(KeyEvent e) {
 		char c = e.getKeyChar();
-		if (c > '0' && c < 'Z') {
+		if (c >= '0' && c <= 'Z') {
 			return Character.toUpperCase(c);
 		} else {
 			return e.getKeyCode();

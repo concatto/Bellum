@@ -149,13 +149,15 @@ public class Spawner {
 		return enemy;
 	}
 	
-	public PlayerTank spawnTank() {
+	public PlayerTank spawnTank(float center, float ground) {
 		PlayerTank tank = new PlayerTank();
 		prepareObject(tank, ObjectType.PLAYER_TANK);
 		
 		tank.setHealth(GameConstants.PLAYER_HEALTH);
 		tank.setTotalHealth(GameConstants.PLAYER_HEALTH);
 		tank.setSpeed(GameConstants.PLAYER_SPEED);
+		tank.setPosition(center - (tank.getWidth() / 2f), ground - tank.getHeight());
+		
 		collection.setTank(tank);
 		return tank;
 	}

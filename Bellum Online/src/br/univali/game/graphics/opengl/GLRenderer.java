@@ -224,7 +224,7 @@ public class GLRenderer implements Renderer {
 		
 		applyTransforms(x, y, frame.width, frame.height);
 		
-		//glColor3f(1, 1, 1);
+		glColor3f(1, 1, 1);
 		glBegin(GL_QUADS);
 		{
 			//Anti-horário começando do canto superior esquerdo

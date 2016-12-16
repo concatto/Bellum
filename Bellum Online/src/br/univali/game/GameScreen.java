@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 
+import br.univali.game.controllers.HUDController;
 import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Texture;
 import br.univali.game.graphics.TextureManager;
@@ -23,6 +24,7 @@ public class GameScreen extends BaseScreen {
 	private GameObjectCollection collection;
 	private CountDownLatch latch = new CountDownLatch(1);
 	private CombatObject playerObject;
+	private HUDController hud;
 	private boolean running = false;
 	private boolean respawnScreenPrepared = false;
 
@@ -46,6 +48,7 @@ public class GameScreen extends BaseScreen {
 			e.printStackTrace();
 		}
 		
+		hud = new HUDController(collection, renderer, window.getSize());
 		running = true;
 		while (running) {
 			GameObjectCollection collection = this.collection;
@@ -56,8 +59,12 @@ public class GameScreen extends BaseScreen {
 				e.printStackTrace();
 			}
 			
+			hud.setCollection(collection);
+			hud.setPlayerObject(playerObject);
+			
 			drawCentralizedTexture(backgroundTexture);
 			drawObjects(collection);
+			hud.drawHUD();
 			
 			if (playerObject.isRespawning()) {
 				drawRespawningScreen();

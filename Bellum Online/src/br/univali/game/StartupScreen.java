@@ -14,11 +14,15 @@ public class StartupScreen extends BaseScreen {
 		this.background = Texture.load("images/menu_background.jpg");
 	}
 	
-	public void displayWelcome() {
+	public String displayWelcome() {
 		boolean running = true;
 		
+		beginInputCapture();
 		
-		while (running) {			
+		String input = "";
+		while (running) {
+			input = getCapturedInput();
+			
 			renderer.setColor(0, 0, 0);
 			renderer.clear();
 			
@@ -35,10 +39,19 @@ public class StartupScreen extends BaseScreen {
 			centralizeXAndDraw("BELLUM", 50);
 			
 			renderer.setFont(GameFont.MEDIUM);
-			centralizeXAndDraw("Press ENTER to start", 400);
+			centralizeXAndDraw("Enter the address of the server", 350);
+			
+			centralizeXAndDraw(input, 400);
+			
+			renderer.setFont(GameFont.SMALL);
+			centralizeXAndDraw("Leave blank to connect to localhost.", 530);
 			
 			renderer.draw();
 		}
+		
+		stopCapturingInput();
+		
+		return input;
 	}
 	
 	public void displayConnectionFailure() {

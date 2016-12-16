@@ -15,6 +15,7 @@ public class HUDController {
 	private GameObjectCollection collection;
 	private Renderer renderer;
 	private IntVec windowSize;
+	private CombatObject playerObject;
 		
 	public HUDController(GameObjectCollection collection, Renderer renderer, IntVec windowSize) {
 		this.collection = collection;
@@ -22,12 +23,11 @@ public class HUDController {
 		this.windowSize = windowSize;
 	}
 	
-	public void updateHUD() {
+	public void drawHUD() {
 		drawPlayerHealthBar();
 		
 		for (Enemy enemy : collection.getEnemies()) {
 			drawEnemyHealth(enemy);
-
 		}
 	}
 	
@@ -80,9 +80,8 @@ public class HUDController {
 	public void drawPlayerHealthBar() {
 		float margin = GameConstants.MARGIN;
 		FloatRect rect = new FloatRect(margin, margin, GameConstants.HUD_BAR_WIDTH, GameConstants.HUD_BAR_HEIGHT);
-		CombatObject tank = collection.getTank();
 		
-		drawBar(rect, tank.getHealth() / (float) tank.getTotalHealth(), 0.85f, 0, 0);
+		drawBar(rect, playerObject.getHealth() / (float) playerObject.getTotalHealth(), 0.85f, 0, 0);
 	}
 	
 	/*(public void drawPlayerKillBar(float kill) {
@@ -105,5 +104,9 @@ public class HUDController {
 	
 	public void setCollection(GameObjectCollection collection) {
 		this.collection = collection;
+	}
+	
+	public void setPlayerObject(CombatObject playerObject) {
+		this.playerObject = playerObject;
 	}
 }

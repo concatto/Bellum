@@ -28,6 +28,7 @@ public class GameClient {
 	
 	public GameClient(RenderMode renderMode, String textureFolder) {
 		window = WindowFactory.createWindow(renderMode, "Bellum", 800, 600);
+		window.onCloseRequested(() -> System.exit(0));
 		
 		StartupScreen startup = new StartupScreen(window);		
 		window.display();
@@ -36,10 +37,13 @@ public class GameClient {
 		boolean connectionError = false;
 		do {
 			do {
-				startup.displayWelcome();
+				String host = startup.displayWelcome();
+				if (host.isEmpty()) {
+					host = "127.0.0.1";
+				}
 				
 				try {
-					Registry registry = LocateRegistry.getRegistry(8080);
+					Registry registry = LocateRegistry.getRegistry(host, 8080);
 					server = (RemoteInterface) registry.lookup("server");
 					
 					connection = server.connectToServer();
@@ -104,7 +108,7 @@ public class GameClient {
 
 
 	private void installListeners() {
-		window.onKeyboardEvent(event -> {
+		window.addKeyboardEventConsumer(event -> {
 			try {
 				connection.publishKeyboardEvent(event);
 			} catch (RemoteException e) {
@@ -112,7 +116,7 @@ public class GameClient {
 			}
 		});
 		
-		window.onMouseEvent(event -> { 
+		window.addMouseEventConsumer(event -> { 
 			try {
 				connection.publishMouseEvent(event);
 			} catch (RemoteException e) {

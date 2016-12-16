@@ -232,6 +232,7 @@ public class LogicController {
 	}
 	
 	public void tryGenerateEnemy() {
+		//Revisar este método
 		long delta = System.currentTimeMillis() - lastSpawn;
 		
 		if (collection.getEnemies().size() >= enemyCount) {
@@ -246,6 +247,7 @@ public class LogicController {
 	}
 	
 	public void tryGenerateSpecial() {
+		//Revisar este método também
 		long delta = System.currentTimeMillis() - lastSpecial;
 		if (delta - specialPerSecond > 1000) {
 			specialPerSecond = delta;
@@ -265,6 +267,7 @@ public class LogicController {
 	}
 	
 	public void tryGenerateHealth() {
+		//Idem
 		long delta = System.currentTimeMillis() - lastHealth;
 		if (delta - healthPerSecond > 1000) {
 			healthPerSecond = delta;

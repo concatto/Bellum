@@ -1,5 +1,7 @@
 package br.univali.game.window;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import br.univali.game.event.input.KeyboardEvent;
@@ -11,6 +13,8 @@ public abstract class GameWindow {
 	protected Renderer renderer;
 	protected int width;
 	protected int height;
+	protected List<Consumer<KeyboardEvent>> keyboardConsumers = new ArrayList<>();
+	protected List<Consumer<MouseEvent>> mouseConsumers = new ArrayList<>();
 	
 	public GameWindow(String title, int width, int height) {
 		this.width = width;
@@ -53,14 +57,26 @@ public abstract class GameWindow {
 	 * for pressionado ou solto.
 	 * @param action a ação a ser realizada.
 	 */
-	public abstract void onMouseEvent(Consumer<MouseEvent> action);
+	public void addMouseEventConsumer(Consumer<MouseEvent> action) {
+		mouseConsumers.add(action);
+	}
 	
 	/**
 	 * Define a ação a ser realizada quando qualquer tecla do teclado
 	 * for pressionada ou solta.
 	 * @param action a ação a ser realizada.
 	 */
-	public abstract void onKeyboardEvent(Consumer<KeyboardEvent> action);
+	public void addKeyboardEventConsumer(Consumer<KeyboardEvent> action) {
+		keyboardConsumers.add(action);
+	}
+	
+	public void removeMouseEventConsumer(Consumer<MouseEvent> consumer) {
+		mouseConsumers.remove(consumer);
+	}
+	
+	public void removeKeyboardEventConsumer(Consumer<KeyboardEvent> consumer) {
+		keyboardConsumers.remove(consumer);
+	}
 	
 	/**
 	 * Define a ação a ser tomada quando uma requisição de fechamento
