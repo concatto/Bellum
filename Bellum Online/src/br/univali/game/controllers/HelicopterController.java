@@ -12,7 +12,8 @@ import br.univali.game.util.IntVec;
 
 public class HelicopterController extends PlayerController {
 
-	private static final int upKey = 'W';
+	private static final int upKey   = 'W';
+	private static final int downKey = 'S';
 	
 	private Enemy helicopter;
 	
@@ -34,22 +35,27 @@ public class HelicopterController extends PlayerController {
 	
 	@Override
 	public Direction computeDirection() {
-		boolean up = pressedKeys.contains(upKey);
+		boolean up   = pressedKeys.contains(upKey);
+		boolean down = pressedKeys.contains(downKey);
 
-		switch (super.computeDirection())
-		{
-		case NONE:
-			if ( up )
-				return Direction.UP;
-			break;
-		case LEFT:
-			return ( up ? Direction.UP_LEFT : Direction.LEFT );
-		case RIGHT:
-			return ( up ? Direction.UP_RIGHT : Direction.RIGHT );
-		default:
-			break;
+		Direction computed = super.computeDirection();
+		if ( up && down ){
+			return computed;
 		}
-		return Direction.DOWN;
+		
+		switch ( computed )
+		{
+			case NONE:
+				if ( up ) 	return Direction.UP;
+				if ( down ) return Direction.DOWN;
+			case LEFT:
+				if ( up )   return Direction.UP_LEFT;
+				if ( down ) return Direction.DOWN_LEFT;
+			case RIGHT:
+				if ( up )   return Direction.UP_RIGHT;
+				if ( down ) return Direction.DOWN_RIGHT;
+		}
+		return computed;
 	}
 
 	private void handleWeapons() {
@@ -68,19 +74,30 @@ public class HelicopterController extends PlayerController {
 		Direction direction = computeDirection();
 		
 		
-		float y = 1;
-		if (direction == Direction.UP_LEFT && helicopter.getY() > 0 ){
-			y = -1;
+		float y = 0.1f;
+		if (direction == Direction.UP_LEFT ){
+			y = -1f;
 			direction = Direction.LEFT;
-		} else if (direction == Direction.UP_RIGHT && helicopter.getY() + helicopter.getWidth() < windowSize.x){
-			y = -1;
+		} else if (direction == Direction.UP_RIGHT ){
+			y = -1f;
 			direction = Direction.RIGHT;
-		} else {
-			if ( direction != Direction.DOWN )
-				y = 0;
+		} else if ( direction == Direction.UP ){
+			y = -1f;
+			direction = Direction.NONE;
+		} else if ( direction == Direction.DOWN ){
+			y = 1f;
+			direction = Direction.NONE;
+		} else if ( direction == Direction.DOWN_LEFT ){
+			y = 1f;
+			direction = Direction.LEFT;
+		} else if ( direction == Direction.DOWN_RIGHT ){
+			y = 1f;
+			direction = Direction.RIGHT;
+		}
+		if ( helicopter.getY() <= 0 && y < 0 ){
+			y = 0f;
 		}
 		
-		y *= 0.01;
 		
 		helicopter.setDirection(direction);
 		
