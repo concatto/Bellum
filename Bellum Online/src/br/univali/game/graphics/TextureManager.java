@@ -33,6 +33,7 @@ public class TextureManager {
 		objectTextures.put(ObjectType.SPECIAL_EXPLOSION, loadTexture("explosionFull.png", 4, 8));
 		objectTextures.put(ObjectType.HEALTH_PICKUP, loadTexture("health.png"));
 		objectTextures.put(ObjectType.SPECIAL_PICKUP, loadTexture("specialcrate.png"));
+		objectTextures.put(ObjectType.FIRE, loadTexture("fire.png", 4, 8));
 	}
 	
 	private Texture loadTexture(String path, int rows, int columns) throws IOException {

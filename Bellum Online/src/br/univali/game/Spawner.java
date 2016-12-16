@@ -172,6 +172,16 @@ public class Spawner {
 		return shield;
 	}
 	
+	public DrawableObject spawnFire() {
+		DrawableObject fire = new DrawableObject();
+		prepareObject(fire, ObjectType.FIRE);
+		
+		fire.setFrameDuration(20);
+		fire.setAnimationRepeated(true);
+		collection.addEffect(fire);
+		return fire;
+	}
+	
 	public void spawnSpecialBullet(GameObject source, FloatVec destination) {
 		Projectile p = makeProjectile(source, destination, ObjectType.SPECIAL_BULLET);
 		

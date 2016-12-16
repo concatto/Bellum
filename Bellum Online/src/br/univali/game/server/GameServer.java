@@ -26,6 +26,7 @@ import br.univali.game.controllers.PhysicsController;
 import br.univali.game.controllers.TankController;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.CombatObject;
+import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
@@ -35,6 +36,7 @@ import br.univali.game.remote.GameInformation;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
 import br.univali.game.util.FloatVec;
+import br.univali.game.util.Geometry;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
 
@@ -165,6 +167,7 @@ public class GameServer {
 		serverWindow.publishMessage("Game starts.");
 		
 		lastFrame = System.nanoTime();
+		DrawableObject fire = spawner.spawnFire();
 		
 		while (true) {
 			try {
@@ -194,13 +197,18 @@ public class GameServer {
 				for (Client c : clients) {
 					CombatObject obj = collection.getPlayerObject(c.getIdentifier());
 					
+					if (c.getRole() == PlayerRole.HELICOPTER) {
+						fire.setPosition(obj.getPosition());
+					}
 					
+					//Mover para logic?
 					if (obj.shouldRespawn()) {
 						if (c.getRole() == PlayerRole.HELICOPTER) {
 							logic.respawnHelicopter(obj);
 						}
 					}
 					
+					//Idem
 					if (obj.getHealth() <= 0 && !obj.isRespawning()) {
 						if (c.getRole() == PlayerRole.HELICOPTER) {
 							obj.prepareRespawn(3000);
