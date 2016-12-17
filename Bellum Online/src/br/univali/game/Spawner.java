@@ -44,13 +44,13 @@ public class Spawner {
 		collection.addPickup(special);
 	}
 
-	public void spawnExplosion(FloatVec position) {
+	public void spawnExplosion(FloatVec center) {
 		//SoundEffect.EXPLODE.play();
 		DrawableObject explosion = new DrawableObject();
 		prepareObject(explosion, ObjectType.EXPLOSION);
 		
 		explosion.setFrameDuration(GameConstants.EXPLOSION_FRAME_TIME);
-		explosion.setPosition(Geometry.toTopLeft(explosion.getSize(), position));
+		explosion.setPosition(Geometry.toTopLeft(explosion.getSize(), center));
 		explosion.setPhysical(false);
 		
 		collection.addEffect(explosion);
@@ -136,7 +136,6 @@ public class Spawner {
 		sourceCenter.x += Math.cos(theta) * (source.getWidth() / 2f);
 		sourceCenter.y += Math.sin(theta) * (source.getHeight() / 2f);
 		
-		System.out.println(Math.sin(theta) + " " + theta);
 		p.setMotionVector((float) Math.cos(theta), (float) Math.sin(theta));
 		p.setRotation((float) theta);
 		p.setHostile(hostile);
@@ -144,11 +143,10 @@ public class Spawner {
 		return p;
 	}
 	
-	public Enemy spawnHelicopter(FloatVec position) {
+	public Enemy spawnHelicopter() {
 		Enemy enemy = new Enemy();
 		prepareObject(enemy, ObjectType.HELICOPTER);
 		
-		enemy.setPosition(position);
 		enemy.setHealth(GameConstants.HELICOPTER_HEALTH);
 		enemy.setTotalHealth(GameConstants.HELICOPTER_HEALTH);
 		enemy.setSpeed(GameConstants.HELICOPTER_SPEED);

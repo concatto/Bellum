@@ -6,6 +6,7 @@ public class CombatObject extends DrawableObject {
 	private Countdown respawnCountdown;
 	private int health = 0;
 	private int totalHealth = 0;
+	private boolean died = false;
 	
 	public CombatObject() {
 		
@@ -13,6 +14,12 @@ public class CombatObject extends DrawableObject {
 
 	public void setHealth(int health) {
 		this.health = health;
+		
+		if (isDead()) {
+			died = true;
+		} else {
+			died = false;
+		}
 	}
 	
 	public int getHealth() {
@@ -21,6 +28,12 @@ public class CombatObject extends DrawableObject {
 	
 	public boolean isDead() {
 		return health <= 0;
+	}
+	
+	public boolean hasDied() {
+		boolean r = died;
+		died = false;
+		return r;
 	}
 
 	public int getTotalHealth() {

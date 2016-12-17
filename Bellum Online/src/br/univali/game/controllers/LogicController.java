@@ -1,13 +1,10 @@
 package br.univali.game.controllers;
 
 import java.util.List;
+import java.util.ListIterator;
 
 import br.univali.game.GameConstants;
 import br.univali.game.Spawner;
-import br.univali.game.behaviour.LinearMotionBehaviour;
-import br.univali.game.behaviour.MotionBehaviour;
-import br.univali.game.behaviour.SinusoidalMotionBehaviour;
-import br.univali.game.behaviour.TriangularMotionBehaviour;
 import br.univali.game.event.collision.BinaryCollisionEvent;
 import br.univali.game.event.collision.CollisionEvent;
 import br.univali.game.objects.CombatObject;
@@ -28,20 +25,58 @@ public class LogicController {
 	private GameObjectCollection collection;
 	private Spawner spawner;
 	private IntVec windowSize;
-	private long enemyInterval = 0;
-	private long lastSpawn = 0;
-	private float enemyCount = Float.MAX_VALUE;
+	private RandomizedObjectEngine randomizedEngine;
 	private float groundLevel;
-	private long lastSpecial;
-	private long lastHealth;
-	private long healthPerSecond = 0;
-	private long specialPerSecond = 0;
-	
+
 	public LogicController(GameObjectCollection collection, Spawner spawner, IntVec windowSize) {
 		this.collection = collection;
 		this.spawner = spawner;
 		this.windowSize = windowSize;
 		this.groundLevel = windowSize.y - GameConstants.GROUND_Y_OFFSET;
+		this.randomizedEngine = new RandomizedObjectEngine(collection, windowSize);
+	}
+
+	public void update(float delta) {
+		cleanupBullets();
+		
+		if (randomizedEngine.shouldGenerateEnemy()) {
+			randomizedEngine.randomizeEnemy(spawner.spawnHelicopter());
+		}
+		
+		if (randomizedEngine.shouldGenerateHealth()) {
+			spawner.spawnHealthPickup(randomizedEngine.generatePickupPosition());
+		}
+		
+		if (randomizedEngine.shouldGenerateSpecial()) {
+			spawner.spawnSpecialPickup(randomizedEngine.generatePickupPosition());
+		}
+		
+		updateEnemies(delta);
+		handleDeaths();
+		handleRespawns();
+	}
+	
+	private void handleRespawns() {
+		collection.getEnemies().stream()
+				.filter(e -> !e.isBot())
+				.filter(e -> e.shouldRespawn())
+				.forEach(this::respawnHelicopter);
+	}
+
+	private void handleDeaths() {
+		for (ListIterator<Enemy> it = collection.getEnemies().listIterator(); it.hasNext(); ) {
+			Enemy e = it.next();
+			
+			if (e.hasDied()) {
+				spawner.spawnExplosion(Geometry.center(e.getBoundingBox()));
+				if (e.isBot()) {
+					it.remove();
+				} else {
+					e.prepareRespawn(3000);
+					e.setAffectedByGravity(true);
+				}
+			}
+		}
 	}
 
 	public void cleanupBullets() {
@@ -51,7 +86,7 @@ public class LogicController {
 			FloatRect windowBox = new FloatRect(0, 0, windowSize.x, windowSize.y);
 			
 			if ((p.getType() == ObjectType.BULLET && !Geometry.intersects(windowBox, itemBox)) ||
-				(p.getType() == ObjectType.CANNONBALL && !isWithinLateralBounds(itemBox, windowBox))) {
+				(p.getType() == ObjectType.CANNONBALL && !Geometry.isWithinLateralBounds(itemBox, windowBox))) {
 				
 				return true;
 			}
@@ -59,27 +94,13 @@ public class LogicController {
 			return false;
 		});
 	}
-	
-	private static boolean isWithinLateralBounds(FloatRect itemBox, FloatRect windowBox) {
-		return itemBox.x + itemBox.width > 0 && itemBox.x < windowBox.width;
-	}
 
 	public void handleEnemyCollisions(List<BinaryCollisionEvent<Projectile, Enemy>> collisions) {
 		for (BinaryCollisionEvent<Projectile, Enemy> event : collisions) {
 			Projectile origin = event.getOrigin();
 			Enemy target = event.getTarget();
 			
-			int damage = damageForProjectile(origin);
-			
-			target.setHealth(target.getHealth() - damage);
-			
-			if (target.isDead()) {
-				spawner.spawnExplosion(Geometry.center(target.getBoundingBox()));
-				
-				if (target.isBot()) {
-					collection.removeEnemy(target);
-				}
-			}
+			target.setHealth(target.getHealth() - damageForProjectile(origin));
 			
 			terminateProjectile(origin);
 		}
@@ -105,14 +126,13 @@ public class LogicController {
 			
 			if (ObjectType.isProjectile(obj.getType())) {
 				obj.setPosition(obj.getX(), groundLevel - (obj.getHeight() / 2));
+				
 				terminateProjectile((Projectile) obj);
 			} else if (obj.getType() == ObjectType.HELICOPTER) {
 				CombatObject c = (CombatObject) obj;
 				
 				if (!c.isDead()) {
 					c.setHealth(0);
-					obj.setMotionVector(0, 0);
-					spawner.spawnExplosion(Geometry.center(obj.getBoundingBox()));
 				}
 			}
 		}
@@ -192,33 +212,6 @@ public class LogicController {
 		}
 	}
 	
-	public void generateAndSpawnEnemy() {
-		float offScreen = 100;
-		
-		boolean val = Math.random() > 0.5;
-		float startPositionXSetter = val ? -offScreen : (windowSize.x + offScreen); 
-		float startPositionYSetter = val ? Utils.generateRandom(0.5f,1f)*((windowSize.y/2)) : ((windowSize.y/4)*Utils.generateRandom(0.5f, 1f));
-		float endPositionXSetter = startPositionXSetter < 0 ? windowSize.x : -50;
-		float endPositionYSetter = startPositionYSetter;
-		FloatVec startVec = new FloatVec(startPositionXSetter, endPositionYSetter);	
-		FloatVec endVec = new FloatVec(endPositionXSetter, endPositionYSetter);
-		
-		Enemy enemy = spawner.spawnHelicopter(startVec);
-		MotionBehaviour behavior;
-		
-		behavior = new LinearMotionBehaviour(startVec,endVec,enemy.getSpeed(), true);
-		
-		if(Math.random() < 0.4) {
-			behavior = new SinusoidalMotionBehaviour(behavior, Utils.generateRandom(4, 15), Utils.generateRandom(500, 1100), enemy.getSpeed());
-		}
-		
-		if (Math.random() < 0.3) {
-			behavior = new TriangularMotionBehaviour(behavior, Utils.generateRandom(3, 13), Utils.generateRandom(300, 1200), enemy.getSpeed());
-		}
-		
-		enemy.setBehaviour(behavior);
-	}
-	
 	public void prepareGame() {
 		CombatObject tank = collection.getTank();
 		FloatRect box = tank.getBoundingBox();
@@ -226,66 +219,6 @@ public class LogicController {
 		box.x = (windowSize.x / 2) - (box.width / 2);
 		tank.setDirection(Direction.RIGHT);
 		tank.setHealth(tank.getTotalHealth());
-		
-		lastSpecial = System.currentTimeMillis();
-		lastHealth = System.currentTimeMillis();
-		specialPerSecond = 0;
-		healthPerSecond = 0;
-	}
-	
-	public void tryGenerateEnemy() {
-		//Revisar este método
-		long delta = System.currentTimeMillis() - lastSpawn;
-		
-		if (collection.getEnemies().size() >= enemyCount) {
-			lastSpawn = System.currentTimeMillis();
-		} else if (delta > enemyInterval) {
-			enemyInterval = (long)(Utils.generateRandom(0.6f, 4.4f)*800);
-			enemyCount = Utils.generateRandom(3, 8);
-			lastSpawn = System.currentTimeMillis();
-			
-			generateAndSpawnEnemy();
-		}
-	}
-	
-	public void tryGenerateSpecial() {
-		//Revisar este método também
-		long delta = System.currentTimeMillis() - lastSpecial;
-		if (delta - specialPerSecond > 1000) {
-			specialPerSecond = delta;
-		
-			if (delta > GameConstants.MIN_PICKUP_INTERVAL) {
-				if (Math.random() < GameConstants.SPECIAL_PICKUP_CHANCE * specialPerSecond
-						|| delta > GameConstants.MAX_PICKUP_INTERVAL) {
-					
-					float x = Utils.generateRandom(windowSize.x * 0.1f, windowSize.x * 0.9f);
-					spawner.spawnSpecialPickup(new FloatVec(x, -200));
-					
-					lastSpecial = System.currentTimeMillis();
-					specialPerSecond = 0;
-				}
-			}
-		}
-	}
-	
-	public void tryGenerateHealth() {
-		//Idem
-		long delta = System.currentTimeMillis() - lastHealth;
-		if (delta - healthPerSecond > 1000) {
-			healthPerSecond = delta;
-			
-			if (delta > GameConstants.MIN_PICKUP_INTERVAL) {
-				if (Math.random() < GameConstants.HEALTH_PICKUP_CHANCE * healthPerSecond
-						|| delta > GameConstants.MAX_PICKUP_INTERVAL) {
-					
-					float x = Utils.generateRandom(windowSize.x * 0.1f, windowSize.x * 0.9f);
-					spawner.spawnHealthPickup(new FloatVec(x, -200));
-					
-					lastHealth = System.currentTimeMillis();
-					healthPerSecond = 0;
-				}
-			}
-		}
 	}
 	
 	public float getGroundLevel() {
@@ -293,12 +226,8 @@ public class LogicController {
 	}
 
 	public void respawnHelicopter(CombatObject helicopter) {
-		float xMax = windowSize.x - helicopter.getWidth();
-		
-		float yMax = (windowSize.y / 3f) - helicopter.getHeight();
-		
 		helicopter.respawn();
-		helicopter.setPosition(new FloatVec(Utils.generateRandom(0, xMax), Utils.generateRandom(0, yMax)));
 		helicopter.setAffectedByGravity(false);
+		randomizedEngine.randomizePlayerHelicopterPosition(helicopter);
 	}
 }

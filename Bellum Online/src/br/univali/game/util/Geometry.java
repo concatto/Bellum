@@ -92,4 +92,8 @@ public abstract class Geometry {
 	public static FloatVec toTopLeft(FloatVec size, FloatVec center) {
 		return new FloatVec(center.x - size.x / 2, center.y - size.y / 2);
 	}
+
+	public static boolean isWithinLateralBounds(FloatRect itemBox, FloatRect windowBox) {
+		return itemBox.x + itemBox.width > 0 && itemBox.x < windowBox.width;
+	}
 }

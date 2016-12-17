@@ -118,7 +118,7 @@ public class GameScreen extends BaseScreen {
 
 	private void drawObjects(GameObjectCollection collection) {
 		for (DrawableObject object : collection.getDrawableObjects()) {
-			if (object.getDirection() == Direction.LEFT) {
+			if (!Direction.isRight(object.getDirection())) {
 				renderer.setScale(new FloatVec(-1, 1));
 			}
 			

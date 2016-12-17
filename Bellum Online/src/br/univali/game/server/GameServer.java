@@ -130,7 +130,7 @@ public class GameServer {
 				c.setController(new TankController(spawner, collection, worldSize, tank));
 				c.getConnection().setRole(PlayerRole.TANK);
 			} else {
-				Enemy helicopter = spawner.spawnHelicopter(new FloatVec(0, 0));
+				Enemy helicopter = spawner.spawnHelicopter();
 				logic.respawnHelicopter(helicopter);
 				
 				collection.addPlayerObject(c.getIdentifier(), helicopter);
@@ -154,7 +154,6 @@ public class GameServer {
 		while (running) {
 			beginGame();
 		}
-		
 	}
 	
 	/**
@@ -165,7 +164,6 @@ public class GameServer {
 		serverWindow.publishMessage("Game starts.");
 		
 		lastFrame = System.nanoTime();
-		DrawableObject fire = spawner.spawnFire();
 		
 		while (true) {
 			try {
@@ -174,48 +172,17 @@ public class GameServer {
 				
 				//serverWindow.publishMessage("FPS: " + (1000f / delta) + " (Rendering took " + delta + " ms).");
 				
-				logic.cleanupBullets();
-				
-				//logic.tryGenerateEnemy();
-				logic.tryGenerateHealth();
-				logic.tryGenerateSpecial();
-				
 				for (Client c : clients) {
 					c.getController().update(delta);
 				}
 				
-				logic.updateEnemies(delta);
+				logic.update(delta);
 				physics.updatePositions(delta);
 				
 				logic.handleEnemyCollisions(physics.checkEnemyCollisions());
 				logic.handleGroundCollisions(physics.checkGroundCollisions());
 				logic.handlePlayerCollisions(physics.checkPlayerCollisions());
 				logic.handlePickupCollisions(physics.checkPickupCollisions());
-			
-				for (Client c : clients) {
-					CombatObject obj = collection.getPlayerObject(c.getIdentifier());
-					
-					if (c.getRole() == PlayerRole.HELICOPTER) {
-						fire.setPosition(obj.getPosition());
-					}
-					
-					//Mover para logic?
-					if (obj.shouldRespawn()) {
-						if (c.getRole() == PlayerRole.HELICOPTER) {
-							logic.respawnHelicopter(obj);
-						}
-					}
-					
-					//Idem
-					if (obj.getHealth() <= 0 && !obj.isRespawning()) {
-						if (c.getRole() == PlayerRole.HELICOPTER) {
-							obj.prepareRespawn(3000);
-							obj.setAffectedByGravity(true);
-						} else if (c.getRole() == PlayerRole.TANK) {
-							terminateGame();
-						}
-					}
-				}
 				
 				animation.updateAnimations(delta);
 				lastFrame = time;
@@ -225,11 +192,6 @@ public class GameServer {
 		}
 		
 		//return false;
-	}
-
-	private void terminateGame() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public GameObjectCollection getGameObjectCollection() {
