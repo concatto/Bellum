@@ -65,7 +65,8 @@ public class PhysicsController {
 		List<CollisionEvent<DrawableObject>> events = new ArrayList<>();
 		
 		for (DrawableObject obj : collection.getDrawableObjects()) {
-			if (obj.getY() + obj.getHeight() > groundLevel) {
+			boolean falling = obj.getMotionVector().y > 0;
+			if (obj.getY() + obj.getHeight() >= groundLevel && falling) {
 				events.add(new CollisionEvent<>(obj));
 			}
 		}

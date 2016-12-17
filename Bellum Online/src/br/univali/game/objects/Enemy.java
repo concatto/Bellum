@@ -19,6 +19,10 @@ public class Enemy extends CombatObject {
 		return behaviour;
 	}
 	
+	public boolean isBot() {
+		return behaviour != null;
+	}
+	
 	public long getLastShot() {
 		return lastShot;
 	}

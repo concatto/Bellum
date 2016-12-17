@@ -95,8 +95,6 @@ public class GameClient {
 					if (game != null) {
 						game.setCollection(server.getGameObjectCollection());
 					}
-//					drawing.setCollection(collection);
-//					hud.setCollection(collection);
 					
 					Thread.sleep(16);
 				} catch (RemoteException | InterruptedException e1) {
@@ -135,32 +133,6 @@ public class GameClient {
 				 e.printStackTrace();
 			 }
 		}, 0, 1, TimeUnit.SECONDS);
-	}
-
-
-	private void drawGame() {
-//		drawing.clear(renderer);
-//		drawing.drawBackground(renderer);
-//		drawing.drawObjects(renderer);
-//		hud.updateHUD();
-		//hud.drawCannonCharge(calculateCannonBarFraction(), player.isCannonOnCooldown(), player.isCannonCharging());
-		
-
-//		hud.drawShieldEnergy(collection.getTank().getShieldEnergy());
-		
-		/*if (collection.getTank().getPowerupTime() > 0) {
-			hud.drawPowerupBar(collection.getTank().getPowerupTime());
-		}*/
-		
-		
-//		try {
-//			FloatVec pos = collection.getPlayerObject(connection.getIdentifier()).getPosition();
-//			renderer.setColor(1, 0, 0, 1);
-//			renderer.drawRectangle(pos.x, pos.y, 30, 30);
-//		} catch (RemoteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 	}
 	
 	private float calculateCannonBarFraction() {

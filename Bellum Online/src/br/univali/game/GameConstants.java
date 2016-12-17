@@ -2,7 +2,7 @@ package br.univali.game;
 
 public interface GameConstants {
 	public static final int HELICOPTER_HEALTH = 50;
-	public static final int PLAYER_HEALTH = 100;
+	public static final int PLAYER_HEALTH = 150;
 	
 	public static final float ENEMY_BULLET_SPEED = 0.7f;
 	public static final float CANNONBALL_SPEED = 0.0016f;

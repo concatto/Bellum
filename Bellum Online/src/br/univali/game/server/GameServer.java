@@ -36,7 +36,6 @@ import br.univali.game.remote.GameInformation;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
 import br.univali.game.util.FloatVec;
-import br.univali.game.util.Geometry;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
 
@@ -112,8 +111,15 @@ public class GameServer {
 	private void prepareGame() {
 		int tankIndex = (int) Math.round(Math.random() * (clients.size() - 1));
 
-		serverWindow.publishMessage("Creating player controllers...");
-
+		serverWindow.publishMessage("Creating controllers...");
+		
+		logic = new LogicController(collection, spawner, worldSize);
+		physics = new PhysicsController(collection, logic.getGroundLevel());
+		animation = new AnimationController(collection, textureManager);
+		
+		serverWindow.publishMessage("Controllers created.");
+		serverWindow.publishMessage("Initializing players...");
+		
 		for (int i = 0; i < clients.size(); i++) {
 			Client c = clients.get(i);
 			
@@ -124,7 +130,8 @@ public class GameServer {
 				c.setController(new TankController(spawner, collection, worldSize, tank));
 				c.getConnection().setRole(PlayerRole.TANK);
 			} else {
-				Enemy helicopter = spawner.spawnHelicopter(new FloatVec(50 + (i * 50), 50));
+				Enemy helicopter = spawner.spawnHelicopter(new FloatVec(0, 0));
+				logic.respawnHelicopter(helicopter);
 				
 				collection.addPlayerObject(c.getIdentifier(), helicopter);
 				c.setController(new HelicopterController(spawner, collection, worldSize, helicopter));
@@ -142,15 +149,6 @@ public class GameServer {
 			e.printStackTrace();
 		}
 		
-		serverWindow.publishMessage("Creating controllers...");
-		
-		logic = new LogicController(collection, spawner, worldSize);
-		physics = new PhysicsController(collection, logic.getGroundLevel());
-		animation = new AnimationController(collection, textureManager);	
-		serverWindow.publishMessage("Controllers created.");
-		
-		
-		serverWindow.publishMessage("Players controllers created.");
 		running = true;
 		
 		while (running) {

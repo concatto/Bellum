@@ -95,7 +95,7 @@ public class Spawner {
 	private Projectile makeProjectile(GameObject source, FloatVec destination, ObjectType type) {		
 		FloatVec sourceCenter = Geometry.center(source.getBoundingBox());
 		
-		float theta = Geometry.angle(sourceCenter, destination);
+		double theta = Geometry.angle(sourceCenter, destination);
 		
 		CombatObject tank = collection.getTank();
 		boolean hostile = source != tank;
@@ -105,7 +105,7 @@ public class Spawner {
 				theta = 0;
 			} else if (theta > (Math.PI / 2) || theta < -Math.PI) {
 				//Se o ângulo está no quadrante inferior esquerdo
-				theta = (float) -Math.PI;
+				theta = -Math.PI;
 			}
 		}
 		
@@ -136,8 +136,9 @@ public class Spawner {
 		sourceCenter.x += Math.cos(theta) * (source.getWidth() / 2f);
 		sourceCenter.y += Math.sin(theta) * (source.getHeight() / 2f);
 		
+		System.out.println(Math.sin(theta) + " " + theta);
 		p.setMotionVector((float) Math.cos(theta), (float) Math.sin(theta));
-		p.setRotation(theta);
+		p.setRotation((float) theta);
 		p.setHostile(hostile);
 		p.setPosition(Geometry.toTopLeft(p.getSize(), sourceCenter));
 		return p;

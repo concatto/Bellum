@@ -73,10 +73,10 @@ public class LogicController {
 			
 			target.setHealth(target.getHealth() - damage);
 			
-			if (target.getHealth() <= 0) {
+			if (target.isDead()) {
 				spawner.spawnExplosion(Geometry.center(target.getBoundingBox()));
-				//REMOVE ISSO LOGO
-				if (target.getBehaviour() != null) {
+				
+				if (target.isBot()) {
 					collection.removeEnemy(target);
 				}
 			}
@@ -106,8 +106,14 @@ public class LogicController {
 			if (ObjectType.isProjectile(obj.getType())) {
 				obj.setPosition(obj.getX(), groundLevel - (obj.getHeight() / 2));
 				terminateProjectile((Projectile) obj);
-			} else if (obj.getType() == ObjectType.PLAYER_HELICOPTER) {
-				((CombatObject) obj).setHealth(0);
+			} else if (obj.getType() == ObjectType.HELICOPTER) {
+				CombatObject c = (CombatObject) obj;
+				
+				if (!c.isDead()) {
+					c.setHealth(0);
+					obj.setMotionVector(0, 0);
+					spawner.spawnExplosion(Geometry.center(obj.getBoundingBox()));
+				}
 			}
 		}
 	}
@@ -118,14 +124,10 @@ public class LogicController {
 			PlayerTank tank = collection.getTank();
 			
 			if (obj.getType() == ObjectType.HEALTH_PICKUP) {
-				//SoundEffect.LIFEUP.play();
-				tank.setHealth(tank.getHealth() + GameConstants.HEALTH_PICKUP_VALUE);
+				int health = tank.getHealth() + GameConstants.HEALTH_PICKUP_VALUE;
 				
-				if (tank.getHealth() > tank.getTotalHealth()) {
-					tank.setHealth(tank.getTotalHealth());
-				}
+				tank.setHealth(Math.min(health, tank.getTotalHealth()));
 			} else if (obj.getType() == ObjectType.SPECIAL_PICKUP) {
-				//SoundEffect.GOTSPECIAL.play();
 				tank.setPoweredUp(true);
 			}
 			
@@ -291,8 +293,12 @@ public class LogicController {
 	}
 
 	public void respawnHelicopter(CombatObject helicopter) {
+		float xMax = windowSize.x - helicopter.getWidth();
+		
+		float yMax = (windowSize.y / 3f) - helicopter.getHeight();
+		
 		helicopter.respawn();
-		helicopter.setPosition(new FloatVec(100, 100));
+		helicopter.setPosition(new FloatVec(Utils.generateRandom(0, xMax), Utils.generateRandom(0, yMax)));
 		helicopter.setAffectedByGravity(false);
 	}
 }
