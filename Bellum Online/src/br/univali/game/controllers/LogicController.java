@@ -103,11 +103,11 @@ public class LogicController {
 		for (CollisionEvent<DrawableObject> evt : collisions) {
 			DrawableObject obj = evt.getOrigin();
 			
-			if (obj.getType() == ObjectType.CANNONBALL || obj.getType() == ObjectType.BULLET) {
+			if (ObjectType.isProjectile(obj.getType())) {
+				obj.setPosition(obj.getX(), groundLevel - (obj.getHeight() / 2));
 				terminateProjectile((Projectile) obj);
-			} else if (obj.getType() == ObjectType.HEALTH_PICKUP || obj.getType() == ObjectType.SPECIAL_PICKUP) {
-				obj.setMotionVector(0, 0);
-				obj.setY(groundLevel - obj.getHeight());
+			} else if (obj.getType() == ObjectType.PLAYER_HELICOPTER) {
+				((CombatObject) obj).setHealth(0);
 			}
 		}
 	}

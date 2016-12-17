@@ -24,7 +24,7 @@ public class AnimationController {
 			
 			Texture tex = manager.getObjectTexture(object.getType());
 			
-			if (tex.getFrames().size() <= 1) continue;
+			if (tex.getFrames().size() <= 1 || object.isAnimationPaused()) continue;
 			
 			float currentTime = object.getFrameTime() + delta;
 			

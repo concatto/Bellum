@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 
-import br.univali.game.controllers.HUDController;
+import br.univali.game.controllers.BaseHUD;
+import br.univali.game.controllers.HelicopterHUD;
+import br.univali.game.controllers.TankHUD;
 import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Texture;
 import br.univali.game.graphics.TextureManager;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.GameObjectCollection;
+import br.univali.game.objects.ObjectType;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.util.Direction;
 import br.univali.game.util.FloatVec;
@@ -24,7 +27,7 @@ public class GameScreen extends BaseScreen {
 	private GameObjectCollection collection;
 	private CountDownLatch latch = new CountDownLatch(1);
 	private CombatObject playerObject;
-	private HUDController hud;
+	private BaseHUD hud;
 	private boolean running = false;
 	private boolean respawnScreenPrepared = false;
 
@@ -48,13 +51,17 @@ public class GameScreen extends BaseScreen {
 			e.printStackTrace();
 		}
 		
-		hud = new HUDController(collection, renderer, window.getSize());
+		hud = createHUD();
 		running = true;
 		while (running) {
 			GameObjectCollection collection = this.collection;
 			
 			try {
 				playerObject = collection.getPlayerObject(connection.getIdentifier());
+				
+				if (connection.getRole() == PlayerRole.HELICOPTER) {
+					playerObject.setType(ObjectType.PLAYER_HELICOPTER);
+				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -64,7 +71,7 @@ public class GameScreen extends BaseScreen {
 			
 			drawCentralizedTexture(backgroundTexture);
 			drawObjects(collection);
-			hud.drawHUD();
+			hud.draw();
 			
 			if (playerObject.isRespawning()) {
 				drawRespawningScreen();
@@ -73,6 +80,22 @@ public class GameScreen extends BaseScreen {
 			}
 			
 			renderer.draw();
+		}
+	}
+
+	private BaseHUD createHUD() {
+		try {
+			switch (connection.getRole()) {
+			case HELICOPTER:
+				return new HelicopterHUD(collection, window);
+			case TANK:
+				return new TankHUD(collection, window);
+			default:
+				return null;
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -100,13 +123,6 @@ public class GameScreen extends BaseScreen {
 			}
 			
 			renderer.setRotation(object.getRotation());
-			
-			if (object == playerObject) {
-				renderer.setColor(0.5f, 0.5f, 0.5f, 0.5f);
-				float margin = 10;
-				renderer.drawRectangle(object.getX() - margin, object.getY() - margin,
-										object.getWidth() + margin * 2, object.getHeight() + margin * 2);
-			}
 			
 			Texture tex = manager.getObjectTexture(object.getType());
 			IntRect frame = tex.getFrames().get(object.getCurrentFrame());			

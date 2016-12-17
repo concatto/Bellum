@@ -27,17 +27,13 @@ public interface GameConstants {
 	public static final int SPECIAL_EXPLOSION_FRAME_TIME = 14;
 
 	public static final long BULLET_COOLDOWN = 150;
-	public static final long BULLET_COOLDOWN_HELICOPTER = 75;
-	public static final long CANNON_COOLDOWN = 3000;
+	public static final long BULLET_COOLDOWN_HELICOPTER = 180;
+	public static final long CANNON_COOLDOWN = 2000;
 	public static final long SPECIAL_BULLET_COOLDOWN = 200;
 	
 	public static final float HEALTH_BAR_HEIGHT = 10;
 	public static final float HEALTH_BAR_Y_OFFSET = 26;
 	public static final float HEALTH_BAR_WIDTH_COEF = 1.35f;
-	
-	public static final float CHARGE_BAR_HEIGHT = 12;
-	public static final float CHARGE_BAR_Y_OFFSET = 24;
-	public static final float CHARGE_BAR_WIDTH_COEF = 2.15f;
 
 	public static final float MARGIN = 10;
 	public static final float HUD_BAR_WIDTH = 170;

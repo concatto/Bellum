@@ -1,7 +1,5 @@
 package br.univali.game;
 
-import java.util.function.Consumer;
-
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.graphics.Renderer;
@@ -15,7 +13,7 @@ import br.univali.game.window.GameWindow;
 public abstract class BaseScreen {
 	protected GameWindow window;
 	protected Renderer renderer;
-	private Consumer<KeyboardEvent> captureConsumer;
+	private boolean capturing = false;
 	private String capturedInput = "";
 	private float overlayAlpha = 1;
 	private float startingAlpha;
@@ -30,19 +28,25 @@ public abstract class BaseScreen {
 		this.window = window;
 		this.renderer = window.getRenderer();
 		
-		captureConsumer = event -> {
-			int key = event.getKey();
-			
-			if (event.getType() == InputEventType.PRESS && key != Keyboard.UNKNOWN) {
-				if (key == Keyboard.BACKSPACE) {
-					if (!capturedInput.isEmpty()) {
-						capturedInput = capturedInput.substring(0, capturedInput.length() - 1);
-					}
-				} else if (key >= '.' && key <= 'Z') {
-					capturedInput += (char) key;
+		window.addKeyboardEventConsumer(this::processCapture);
+	}
+
+	private void processCapture(KeyboardEvent event) {
+		if (!capturing) {
+			return;
+		}
+		
+		int key = event.getKey();
+		
+		if (event.getType() == InputEventType.PRESS && key != Keyboard.UNKNOWN) {
+			if (key == Keyboard.BACKSPACE) {
+				if (!capturedInput.isEmpty()) {
+					capturedInput = capturedInput.substring(0, capturedInput.length() - 1);
 				}
+			} else if (key >= '.' && key <= 'Z') {
+				capturedInput += (char) key;
 			}
-		};
+		}
 	}
 
 	protected void centralizeAndDraw(String text) {
@@ -111,11 +115,11 @@ public abstract class BaseScreen {
 	
 	protected void beginInputCapture() {
 		clearCapturedInput();
-		window.addKeyboardEventConsumer(captureConsumer);
+		capturing = true;
 	}
 	
 	protected void stopCapturingInput() {
-		window.removeKeyboardEventConsumer(captureConsumer);
+		capturing = false;
 	}
 	
 	protected void clearCapturedInput() {

@@ -178,7 +178,7 @@ public class GameServer {
 				
 				logic.cleanupBullets();
 				
-				logic.tryGenerateEnemy();
+				//logic.tryGenerateEnemy();
 				logic.tryGenerateHealth();
 				logic.tryGenerateSpecial();
 				

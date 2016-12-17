@@ -38,7 +38,7 @@ public class PhysicsController {
 			if (p.isHostile()) continue;
 			
 			for (Enemy enemy : collection.getEnemies()) {
-				if (didCollide(p, enemy)) {
+				if (!enemy.isDead() && didCollide(p, enemy)) {
 					events.add(new BinaryCollisionEvent<>(p, enemy));
 				}
 			}
@@ -106,7 +106,9 @@ public class PhysicsController {
 		object.setX(object.getX() + coefficient * v.x);
 		
 		if (groundDelta > 0) {
-			object.setY(groundLevel - object.getHeight());
+			if (object.isPhysical()) {
+				object.setY(groundLevel - object.getHeight());
+			}
 		} else {
 			object.setY(object.getY() + coefficient * v.y);
 			

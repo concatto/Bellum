@@ -2,12 +2,9 @@ package br.univali.game.controllers;
 
 import br.univali.game.GameConstants;
 import br.univali.game.Spawner;
-import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
-import br.univali.game.objects.PlayerHelicopter;
 import br.univali.game.util.Direction;
-import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntVec;
 
 public class HelicopterController extends PlayerController {
@@ -25,7 +22,7 @@ public class HelicopterController extends PlayerController {
 	
 	@Override
 	public void update(float delta) {
-		//Talvez devesse estar mais acima no call stack
+		//Talvez a verificação devesse estar mais acima no call stack
 		if (!helicopter.isDead()) {
 			handleMovement();
 			handleWeapons();

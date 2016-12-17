@@ -14,6 +14,7 @@ public class GameObject implements Serializable {
 	private float speed = 0;
 	private Direction direction; //Used to control mirroring
 	private ObjectType type;
+	private boolean physical = true;
 
 	public GameObject() {
 		
@@ -120,5 +121,13 @@ public class GameObject implements Serializable {
 	
 	public FloatVec getSize() {
 		return new FloatVec(boundingBox.width, boundingBox.height);
+	}
+
+	public void setPhysical(boolean physical) {
+		this.physical = physical;
+	}
+	
+	public boolean isPhysical() {
+		return physical;
 	}
 }

@@ -6,6 +6,7 @@ public class DrawableObject extends GameObject {
 	private float frameTime = 0;
 	private float frameDuration = 0;
 	private boolean animationRepeated = false;
+	private boolean animationPaused = false;
 
 	public DrawableObject() {
 		
@@ -53,5 +54,17 @@ public class DrawableObject extends GameObject {
 
 	public void setCurrentFrame(int currentFrame) {
 		this.currentFrame = currentFrame;
+	}
+	
+	public void pauseAnimation() {
+		animationPaused = true;
+	}
+	
+	public void resumeAnimation() {
+		animationPaused = false;
+	}
+	
+	public boolean isAnimationPaused() {
+		return animationPaused;
 	}
 }

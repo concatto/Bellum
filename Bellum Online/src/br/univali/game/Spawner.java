@@ -51,6 +51,7 @@ public class Spawner {
 		
 		explosion.setFrameDuration(GameConstants.EXPLOSION_FRAME_TIME);
 		explosion.setPosition(Geometry.toTopLeft(explosion.getSize(), position));
+		explosion.setPhysical(false);
 		
 		collection.addEffect(explosion);
 	}
@@ -61,18 +62,20 @@ public class Spawner {
 		
 		spark.setFrameDuration(GameConstants.SPARK_FRAME_TIME);
 		spark.setPosition(Geometry.toTopLeft(spark.getSize(), position));
+		spark.setPhysical(false);
 		
 		collection.addEffect(spark);
 	}
 	
 	public void spawnSpecialExplosion(FloatVec position) {
-		DrawableObject o = new DrawableObject();
-		prepareObject(o, ObjectType.SPECIAL_EXPLOSION);
+		DrawableObject obj = new DrawableObject();
+		prepareObject(obj, ObjectType.SPECIAL_EXPLOSION);
 		
-		o.setFrameDuration(GameConstants.SPECIAL_EXPLOSION_FRAME_TIME);
-		o.setPosition(Geometry.toTopLeft(o.getSize(), position));
+		obj.setFrameDuration(GameConstants.SPECIAL_EXPLOSION_FRAME_TIME);
+		obj.setPosition(Geometry.toTopLeft(obj.getSize(), position));
+		obj.setPhysical(false);
 		
-		collection.addEffect(o);
+		collection.addEffect(obj);
 	}
 	
 	public void spawnCannonball(float force, GameObject origin, FloatVec destination) {
@@ -96,15 +99,15 @@ public class Spawner {
 		
 		CombatObject tank = collection.getTank();
 		boolean hostile = source != tank;
-//		if (!hostile) {
-//			if (theta > 0 && theta < (Math.PI / 2)) {
-//				//Se o ângulo está no quadrante inferior direito
-//				theta = 0;
-//			} else if (theta > (Math.PI / 2) || theta < -Math.PI) {
-//				//Se o ângulo está no quadrante inferior esquerdo
-//				theta = (float) -Math.PI;
-//			}
-//		}
+		if (!hostile) {
+			if (theta > 0 && theta < (Math.PI / 2)) {
+				//Se o ângulo está no quadrante inferior direito
+				theta = 0;
+			} else if (theta > (Math.PI / 2) || theta < -Math.PI) {
+				//Se o ângulo está no quadrante inferior esquerdo
+				theta = (float) -Math.PI;
+			}
+		}
 		
 		Projectile p = new Projectile();
 		prepareObject(p, type);
@@ -130,6 +133,9 @@ public class Spawner {
 			return null;
 		}
 		
+		sourceCenter.x += Math.cos(theta) * (source.getWidth() / 2f);
+		sourceCenter.y += Math.sin(theta) * (source.getHeight() / 2f);
+		
 		p.setMotionVector((float) Math.cos(theta), (float) Math.sin(theta));
 		p.setRotation(theta);
 		p.setHostile(hostile);
@@ -145,6 +151,9 @@ public class Spawner {
 		enemy.setHealth(GameConstants.HELICOPTER_HEALTH);
 		enemy.setTotalHealth(GameConstants.HELICOPTER_HEALTH);
 		enemy.setSpeed(GameConstants.HELICOPTER_SPEED);
+		enemy.setAnimationRepeated(true);
+		enemy.setFrameDuration(50);
+		
 		collection.addEnemy(enemy);
 		return enemy;
 	}
@@ -168,6 +177,8 @@ public class Spawner {
 		
 		shield.setFrameDuration(GameConstants.SHIELD_FRAME_TIME);
 		shield.setAnimationRepeated(true);
+		shield.setPhysical(false);
+		
 		collection.addEffect(shield);
 		return shield;
 	}

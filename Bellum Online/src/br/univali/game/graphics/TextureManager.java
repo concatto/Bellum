@@ -25,7 +25,8 @@ public class TextureManager {
 		objectTextures.put(ObjectType.PLAYER_TANK, loadTexture("tank.png"));
 		objectTextures.put(ObjectType.CANNONBALL, loadTexture("cannonball.png"));
 		objectTextures.put(ObjectType.BULLET, loadTexture("bullet.png"));
-		objectTextures.put(ObjectType.HELICOPTER, loadTexture("helicopter.png"));
+		objectTextures.put(ObjectType.HELICOPTER, loadTexture("helicopter.png", 1, 4));
+		objectTextures.put(ObjectType.PLAYER_HELICOPTER, loadTexture("player_helicopter.png", 1, 4));
 		objectTextures.put(ObjectType.EXPLOSION, loadTexture("explosion.png", 4, 4));
 		objectTextures.put(ObjectType.SPARK, loadTexture("spark.png", 1, 4));
 		objectTextures.put(ObjectType.SHIELD, loadTexture("shield.png", 2, 4));
