@@ -21,7 +21,9 @@ public class HelicopterController extends PlayerController {
 	@Override
 	public void update(float delta) {
 		//Talvez a verificação devesse estar mais acima no call stack
-		if (!helicopter.isDead()) {
+		if (helicopter.isDead()) {
+			helicopter.setMotionVector(0, 1);
+		} else {
 			handleMovement();
 			handleWeapons();
 		}
@@ -70,7 +72,7 @@ public class HelicopterController extends PlayerController {
 		Direction direction = computeDirection();
 		
 		
-		float y = 0.1f;
+		float y = 0.01f;
 		if (direction == Direction.UP_LEFT ){
 			y = -1f;
 			direction = Direction.LEFT;
