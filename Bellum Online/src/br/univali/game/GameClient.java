@@ -36,6 +36,8 @@ public class GameClient {
 
 		boolean connectionError = false;
 		do {
+			boolean gameRunning = false;
+			
 			do {
 				String host = startup.displayWelcome();
 				if (host.isEmpty()) {
@@ -48,12 +50,21 @@ public class GameClient {
 					
 					connection = server.connectToServer();
 					launchHeartbeatTask();
+					
+					if (connection.isServerReady()) {
+						gameRunning = true;
+					}
 				} catch (RemoteException | NotBoundException e) {
 					e.printStackTrace();
 					startup.displayConnectionFailure();
 					server = null;
 				}
 			} while (server == null);
+			
+			if (gameRunning) {
+				startup.displayJoining();
+				break;
+			}
 			
 			WaitingRoomScreen room = new WaitingRoomScreen(window, connection);
 			

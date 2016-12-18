@@ -2,8 +2,8 @@ package br.univali.game;
 
 import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Texture;
-import br.univali.game.util.FloatVec;
-import br.univali.game.util.Geometry;
+import br.univali.game.server.GameServer;
+import br.univali.game.util.Countdown;
 import br.univali.game.window.GameWindow;
 
 public class StartupScreen extends BaseScreen {
@@ -55,16 +55,30 @@ public class StartupScreen extends BaseScreen {
 	}
 	
 	public void displayConnectionFailure() {
-		long time = System.currentTimeMillis();
+		Countdown c = Countdown.createAndStart(3000);
 		
-		while (System.currentTimeMillis() - time < 3000) {
-			FloatVec center = Geometry.centerVector(background.getSize().toFloat(), window.getSize().toFloat());
-			renderer.drawTexture(background, center.x, center.y);
-			
+		while (!c.finished()) {
+			drawCentralizedTexture(background);			
 			drawOverlay(0.8f);
 			
+			renderer.setFont(GameFont.MEDIUM);
 			renderer.setColor(0.9f, 0, 0, 1);
 			centralizeAndDraw("Failed to connect to server.");
+			
+			renderer.draw();
+		}
+	}
+
+	public void displayJoining() {
+		Countdown c = Countdown.createAndStart(GameServer.PREPARE_TIME);
+		
+		while (!c.finished()) {
+			drawCentralizedTexture(background);
+			drawOverlay(0.7f);
+			
+			renderer.setFont(GameFont.LARGE);
+			renderer.setColor(1, 1, 1);
+			centralizeAndDraw(String.format("Joining game in %.2fs", c.remainingSeconds()));
 			
 			renderer.draw();
 		}

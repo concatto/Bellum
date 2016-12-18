@@ -7,8 +7,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,6 +35,7 @@ import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.GameInformation;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
+import br.univali.game.util.Countdown;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
 
@@ -52,6 +55,7 @@ public class GameServer {
 	private Spawner spawner;
 	
 	private List<Client> clients = new ArrayList<>();
+	private Map<Client, Countdown> newClients = new HashMap<>();
 	private Registry registry = null;
 	private RemoteInterface remoteInterface;
 	
@@ -121,18 +125,9 @@ public class GameServer {
 			Client c = clients.get(i);
 			
 			if (i == tankIndex) {	
-				PlayerTank tank = spawner.spawnTank(worldSize.x / 2f, worldSize.y - GameConstants.GROUND_Y_OFFSET);
-				
-				collection.addPlayerObject(c.getIdentifier(), tank);
-				c.setController(new TankController(spawner, worldSize, tank));
-				c.getConnection().setRole(PlayerRole.TANK);
+				initializeTank(c);
 			} else {
-				Enemy helicopter = spawner.spawnHelicopter();
-				logic.respawnHelicopter(helicopter);
-				
-				collection.addPlayerObject(c.getIdentifier(), helicopter);
-				c.setController(new HelicopterController(spawner, worldSize, helicopter));
-				c.getConnection().setRole(PlayerRole.HELICOPTER);
+				initializePlayerHelicopter(c);
 			}
 			
 			serverWindow.publishMessage("Client " + c.getIdentifier() + " is playing as " + c.getRole());
@@ -151,6 +146,23 @@ public class GameServer {
 		while (running) {
 			beginGame();
 		}
+	}
+
+	private void initializeTank(Client c) {
+		PlayerTank tank = spawner.spawnTank(worldSize.x / 2f, worldSize.y - GameConstants.GROUND_Y_OFFSET);
+		
+		collection.addPlayerObject(c.getIdentifier(), tank);
+		c.setController(new TankController(spawner, worldSize, tank));
+		c.getConnection().setRole(PlayerRole.TANK);
+	}
+
+	private void initializePlayerHelicopter(Client c) {
+		Enemy helicopter = spawner.spawnHelicopter();
+		logic.respawnHelicopter(helicopter);
+		
+		collection.addPlayerObject(c.getIdentifier(), helicopter);
+		c.setController(new HelicopterController(spawner, worldSize, helicopter));
+		c.getConnection().setRole(PlayerRole.HELICOPTER);
 	}
 	
 	/**
@@ -182,6 +194,9 @@ public class GameServer {
 				logic.handlePickupCollisions(physics.checkPickupCollisions());
 				
 				animation.updateAnimations(delta);
+				
+				insertNewClients();
+				
 				lastFrame = time;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -189,6 +204,22 @@ public class GameServer {
 		}
 		
 		//return false;
+	}
+
+	private void insertNewClients() {
+		List<Client> toRemove = new ArrayList<>();
+		
+		newClients.forEach((c, count) -> {
+			if (count.finished()) {
+				c.setReady(true);
+				initializePlayerHelicopter(c);
+				
+				clients.add(c);
+				toRemove.add(c);
+			}
+		});
+		
+		toRemove.forEach(newClients::remove);
 	}
 
 	public GameObjectCollection getGameObjectCollection() {
@@ -207,8 +238,6 @@ public class GameServer {
 		GameConnectionImpl conn = new GameConnectionImpl(identifier);
 		Client client = new Client(conn);
 		
-		clients.add(client);
-		
 		conn.setGameScoreCallable(() -> logic.getScore());
 		conn.setServerReadyCallable(() -> running);
 		conn.setGameInformationCallable(() -> {
@@ -217,15 +246,21 @@ public class GameServer {
 					.collect(Collectors.toList()));
 		});
 		
-		conn.setReadyConsumer(r -> {
-			client.setReady(r);
-			serverWindow.publishMessage("Player" + (r ? "" : " not") + " ready: " + client.getIdentifier());
+		if (running) {			
+			newClients.put(client, Countdown.createAndStart(PREPARE_TIME));
+		} else {
+			conn.setReadyConsumer(r -> {
+				client.setReady(r);
+				serverWindow.publishMessage("Player" + (r ? "" : " not") + " ready: " + client.getIdentifier());
+				
+				//inicia o jogo se todos estiverem prontos
+				if (clients.stream().allMatch(c -> c.isReady())) {
+					executor.submit(this::prepareGame);
+				}
+			});
 			
-			//inicia o jogo se todos estiverem prontos
-			if (clients.stream().allMatch(c -> c.isReady())) {
-				executor.submit(this::prepareGame);
-			}
-		});
+			clients.add(client);
+		}
 		
 		serverWindow.publishMessage("Player connected: "+identifier);
 		
