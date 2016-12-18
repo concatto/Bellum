@@ -24,7 +24,7 @@ public abstract class PlayerController {
 
 	protected Spawner spawner;
 	
-	protected IntVec mousePosition;
+	protected IntVec mousePosition = new IntVec(0, 0);
 	protected IntVec windowSize;
 	
 	public PlayerController(Spawner spawner, IntVec windowSize) {
@@ -84,6 +84,6 @@ public abstract class PlayerController {
 		lastBullet = 0;
 	}
 	
-	public abstract void update(float delta);  
+	public abstract void update(float delta);
 	
 }

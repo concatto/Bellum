@@ -129,4 +129,8 @@ public abstract class BaseScreen {
 	protected String getCapturedInput() {
 		return capturedInput;
 	}
+	
+	public float getOverlayAlpha() {
+		return overlayAlpha;
+	}
 }

@@ -1,7 +1,6 @@
 package br.univali.game.objects;
 
 import java.io.Serializable;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +86,7 @@ public class GameObjectCollection implements Serializable {
 		projectiles.remove(projectile);
 	}
 	
-	public void clear() throws RemoteException {
+	public void clear() {
 		projectiles.clear();
 		effects.clear();
 		enemies.clear();

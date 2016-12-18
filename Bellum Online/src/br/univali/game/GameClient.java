@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import br.univali.game.graphics.Renderer;
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.window.GameWindow;
@@ -19,102 +18,98 @@ import br.univali.game.window.WindowFactory;
 
 public class GameClient {
 	private ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledExecutorService communicationExecutor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture<?> heartbeatFuture;
+	private ScheduledFuture<?> communicationFuture;
 	private GameWindow window;
-	private Renderer renderer;
 	private RemoteInterface server;
 	private GameConnection connection;
 	private GameScreen game;
+	private WaitingRoomScreen room;
+	private StartupScreen startup;
 	
 	public GameClient(RenderMode renderMode, String textureFolder) {
 		window = WindowFactory.createWindow(renderMode, "Bellum", 800, 600);
 		window.onCloseRequested(() -> System.exit(0));
 		
-		StartupScreen startup = new StartupScreen(window);		
+		startup = new StartupScreen(window);		
 		window.display();
-		renderer = window.getRenderer();
+		
+		boolean gameRunning = connect(startup);
+		room = new WaitingRoomScreen(window, connection);
+		game = new GameScreen(window, connection);
+		installListeners();
 
-		boolean connectionError = false;
 		do {
-			boolean gameRunning = false;
-			
-			do {
-				String host = startup.displayWelcome();
-				if (host.isEmpty()) {
-					host = "127.0.0.1";
-				}
-				
-				try {
-					Registry registry = LocateRegistry.getRegistry(host, 8080);
-					server = (RemoteInterface) registry.lookup("server");
-					
-					connection = server.connectToServer();
-					launchHeartbeatTask();
-					
-					if (connection.isServerReady()) {
-						gameRunning = true;
-					}
-				} catch (RemoteException | NotBoundException e) {
-					e.printStackTrace();
-					startup.displayConnectionFailure();
-					server = null;
-				}
-			} while (server == null);
-			
 			if (gameRunning) {
 				startup.displayJoining();
-				break;
+				gameRunning = false;
+			} else {
+				displayWaitingRoom();
 			}
+		
+			window.display();
 			
-			WaitingRoomScreen room = new WaitingRoomScreen(window, connection);
+			beginQueryingCollection();
+			game.start();
 			
-			room.onReady(ready -> {
-				try {
-					connection.publishReady(ready);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			});
+			communicationFuture.cancel(true);
+		} while (true);
+	}
 
-			try {
-				room.display();
-			} catch (ConnectException e2) {
-				e2.printStackTrace();
-				startup.displayConnectionFailure();
-				connection = null;
-				heartbeatFuture.cancel(true);
-				connectionError = true;
+
+	private void displayWaitingRoom() {
+		try {
+			room.display();
+		} catch (ConnectException e2) {
+			e2.printStackTrace();
+			heartbeatFuture.cancel(true);
+		}
+	}
+
+
+	private boolean connect(StartupScreen startup) {
+		do {
+			String host = startup.displayWelcome();
+			if (host.isEmpty()) {
+				host = "127.0.0.1";
 			}
-		} while (connectionError);
+			
+			try {
+				Registry registry = LocateRegistry.getRegistry(host, 8080);
+				server = (RemoteInterface) registry.lookup("server");
+				
+				connection = server.connectToServer();
+				launchHeartbeatTask();
+				
+				if (connection.isServerReady()) {
+					return true;
+				}
+			} catch (RemoteException | NotBoundException e) {
+				e.printStackTrace();
+				startup.displayConnectionFailure();
+				server = null;
+			}
+		} while (server == null);
 		
-		window.display();
-		
-		installListeners();
-		beginQueryingCollection();
-		
-		game = new GameScreen(window, connection);
-		game.start();
+		return false;
 	}
 
 
 	private void beginQueryingCollection() {
-		new Thread(() -> {
-			while (true) {
-				try {
-					connection.publishMousePosition(window.getMousePosition());
+		communicationFuture = communicationExecutor.scheduleAtFixedRate(() -> {
+			try {
+				connection.publishMousePosition(window.getMousePosition());
 
-					if (game != null) {
-						game.setCollection(server.getGameObjectCollection());
-					}
-					
-					Thread.sleep(16);
-				} catch (RemoteException | InterruptedException e1) {
-					e1.printStackTrace();
+				if (game != null) {
+					game.setCollection(server.getGameObjectCollection());
 				}
+				
+			} catch (RemoteException e1) {
+				e1.printStackTrace();
 			}
-		},"ServerCommunicator").start();
+		}, 0, 16, TimeUnit.MILLISECONDS);
 	}
-
 
 	private void installListeners() {
 		window.addKeyboardEventConsumer(event -> {
@@ -134,7 +129,6 @@ public class GameClient {
 		});
 	}
 	
-	
 	private void launchHeartbeatTask() {
 		 heartbeatFuture = heartbeatExecutor.scheduleAtFixedRate(() -> {
 			 if (connection == null) return;
@@ -144,17 +138,5 @@ public class GameClient {
 				 e.printStackTrace();
 			 }
 		}, 0, 1, TimeUnit.SECONDS);
-	}
-	
-	private float calculateCannonBarFraction() {
-		/*boolean cooldown = player.isCannonOnCooldown();
-		
-		if (cooldown) {
-			return 1 - (player.getRemainingCannonCooldown() / GameConstants.CANNON_COOLDOWN);
-		} else {
-			return player.getCannonCharge() / GameConstants.MAX_CANNONBALL_TIME;
-		}*/
-		
-		return 0;
 	}
 }
