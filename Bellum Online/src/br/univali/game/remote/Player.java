@@ -3,7 +3,6 @@ package br.univali.game.remote;
 import java.io.Serializable;
 
 import br.univali.game.PlayerRole;
-import br.univali.game.objects.CombatObject;
 
 public class Player implements Serializable {
 	private String name;

@@ -6,6 +6,7 @@ public enum GameFont {
 	GIGANTIC(new Font("Helvetica", Font.PLAIN, 70)),
 	LARGE(new Font("Helvetica", Font.PLAIN, 40)),
 	MEDIUM(new Font("Helvetica", Font.PLAIN, 28)),
+	MEDIUM_BOLD(new Font("Helvetica", Font.BOLD, 28)),
 	SMALL(new Font("Helvetica", Font.PLAIN, 20));
 	
 	private Font font;

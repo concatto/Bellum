@@ -13,12 +13,12 @@ import br.univali.game.util.IntVec;
 import br.univali.game.util.Utils;
 import br.univali.game.window.GameWindow;
 
-public class BaseHUD {
+public abstract class BaseHUD {
 	protected GameObjectCollection collection;
 	protected GameWindow window;
 	protected Renderer renderer;
 	protected CombatObject playerObject;
-	private GameScore score;
+	protected GameScore score;
 		
 	public BaseHUD(GameObjectCollection collection, GameWindow window) {
 		this.collection = collection;
@@ -35,13 +35,8 @@ public class BaseHUD {
 		}
 	}
 	
-	private void drawScore() {
-		renderer.setFont(GameFont.MEDIUM);
-		renderer.setColor(0, 0, 0);
-		renderer.drawText("Helicopters: " + score.getHelicoptersScore(), 400, 10);
-		renderer.drawText("Tank: " + score.getTankScore(), 400, 40);
-	}
-
+	protected abstract void drawScore();
+	
 	protected void drawIndicatorBar(int index, float fraction, float red, float green, float blue) {
 		drawIndicatorBar(index, fraction, red, green, blue, true);
 	}

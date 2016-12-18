@@ -114,6 +114,7 @@ public class GameServer {
 
 		serverWindow.publishMessage("Creating controllers...");
 		
+		collection.clear();
 		logic = new LogicController(collection, spawner, worldSize);
 		physics = new PhysicsController(collection, logic.getGroundLevel());
 		animation = new AnimationController(collection, textureManager);
@@ -143,9 +144,18 @@ public class GameServer {
 		
 		running = true;
 		
-		while (running) {
-			beginGame();
+		beginGame();
+		cleanup();
+	}
+
+	private void cleanup() {
+		for (Client c : clients) {
+			c.setReady(false);
+			c.getConnection().setRole(PlayerRole.NONE);
 		}
+		
+		running = false;
+		serverWindow.publishMessage("Game ended.");
 	}
 
 	private void initializeTank(Client c) {
@@ -196,6 +206,10 @@ public class GameServer {
 				animation.updateAnimations(delta);
 				
 				insertNewClients();
+				
+				if (collection.getTank().isDead()) {
+					return true;
+				}
 				
 				lastFrame = time;
 			} catch (Exception e) {

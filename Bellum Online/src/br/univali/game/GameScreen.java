@@ -16,6 +16,7 @@ import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.ObjectType;
 import br.univali.game.remote.GameConnection;
+import br.univali.game.util.Countdown;
 import br.univali.game.util.Direction;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntRect;
@@ -26,11 +27,16 @@ public class GameScreen extends BaseScreen {
 	private Texture backgroundTexture;
 	private TextureManager manager;
 	private GameObjectCollection collection;
-	private CountDownLatch latch = new CountDownLatch(1);
+	private CountDownLatch latch;
 	private CombatObject playerObject;
 	private BaseHUD hud;
 	private boolean running = false;
 	private boolean respawnScreenPrepared = false;
+	private Countdown endingCountdown;
+//	private LogicController logic;
+//	private PhysicsController physics;
+//	private AnimationController animation;
+//	private Spawner spawner;
 
 	public GameScreen(GameWindow window, GameConnection connection) {
 		super(window);
@@ -43,10 +49,16 @@ public class GameScreen extends BaseScreen {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+//		spawner = new Spawner(manager, collection);
+//		logic = new LogicController(collection, spawner, window.getSize());
+//		physics = new PhysicsController(collection, logic.getGroundLevel());
+//		animation = new AnimationController(collection, manager);
 	}
 
 	public void start() {
 		try {
+			latch = new CountDownLatch(1);
 			latch.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -55,7 +67,14 @@ public class GameScreen extends BaseScreen {
 		GameScore score = null;
 		hud = createHUD();
 		running = true;
+		endingCountdown = new Countdown(5000);
+		
+		long lastFrame = System.nanoTime();
+		
 		while (running) {
+			long time = System.nanoTime();
+			float delta = (float) ((time - lastFrame) / 1E6);
+			
 			GameObjectCollection collection = this.collection;
 			
 			try {
@@ -73,6 +92,16 @@ public class GameScreen extends BaseScreen {
 			hud.setPlayerObject(playerObject);
 			hud.setGameScore(score);
 			
+//			logic.update(delta);
+//			physics.updatePositions(delta);
+//			
+//			logic.handleEnemyCollisions(physics.checkEnemyCollisions());
+//			logic.handleGroundCollisions(physics.checkGroundCollisions());
+//			logic.handlePlayerCollisions(physics.checkPlayerCollisions());
+//			logic.handlePickupCollisions(physics.checkPickupCollisions());
+//			
+//			animation.updateAnimations(delta);
+			
 			drawCentralizedTexture(backgroundTexture);
 			drawObjects(collection);
 			hud.draw();
@@ -83,7 +112,38 @@ public class GameScreen extends BaseScreen {
 				respawnScreenPrepared = false;
 			}
 			
+			if (collection.getTank().isDead()) {
+				drawEndingScreen();
+			}
+			
 			renderer.draw();
+			lastFrame = time;
+		}
+	}
+
+	private void drawEndingScreen() {
+		float targetAlpha = 0.6f;
+		
+		if (!endingCountdown.running()) {
+			endingCountdown.start();
+			setOverlayAlpha(0);
+			setOverlayColor(0, 0, 0);
+			fadeOverlayTo(targetAlpha, 1500);
+		}
+		
+		drawOverlay();
+		
+		float textAlpha = getOverlayAlpha() * (1 / targetAlpha);
+		
+		renderer.setFont(GameFont.LARGE);
+		renderer.setColor(1, 1, 1, textAlpha); //Atenção aqui
+		centralizeXAndDraw("GAME ENDED", 250);
+		
+		renderer.setFont(GameFont.MEDIUM);
+		centralizeXAndDraw(String.format("Resuming in %.2fs", endingCountdown.remainingSeconds()), 400);
+		
+		if (endingCountdown.finished()) {
+			running = false;
 		}
 	}
 

@@ -3,7 +3,6 @@ package br.univali.game;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.function.Consumer;
 
 import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Texture;
@@ -16,12 +15,11 @@ import br.univali.game.window.GameWindow;
 
 public class WaitingRoomScreen extends BaseScreen {
 	private Texture background;
-	private Consumer<Boolean> readyConsumer;
 	private boolean previousEnter = true;
 	private boolean ready = false;
 	private GameConnection connection;
 	private boolean allReady = false;
-	private Countdown countdown = new Countdown(GameServer.PREPARE_TIME);
+	private Countdown countdown;
 	
 	public WaitingRoomScreen(GameWindow window, GameConnection connection) {
 		super(window);
@@ -33,6 +31,9 @@ public class WaitingRoomScreen extends BaseScreen {
 	public void display() throws ConnectException {
 		boolean running = true;
 		setOverlayAlpha(0.6f);
+		countdown = new Countdown(GameServer.PREPARE_TIME);
+		ready = allReady = false;
+		previousEnter = true;
 		
 		while (running) {
 			try {
@@ -57,7 +58,12 @@ public class WaitingRoomScreen extends BaseScreen {
 			boolean enter = window.isKeyPressed(Keyboard.ENTER);
 			if (enter && !previousEnter && !allReady) {
 				ready = !ready;
-				readyConsumer.accept(ready);
+				
+				try {
+					connection.publishReady(ready);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 			}
 			
 			previousEnter = enter;
@@ -134,9 +140,4 @@ public class WaitingRoomScreen extends BaseScreen {
 			allReady = true;
 		}
 	}
-
-	public void onReady(Consumer<Boolean> readyConsumer) {
-		this.readyConsumer = readyConsumer;
-	}
-
 }
