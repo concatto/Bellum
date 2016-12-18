@@ -72,7 +72,7 @@ public class HelicopterController extends PlayerController {
 		Direction direction = computeDirection();
 		
 		
-		float y = 0.01f;
+		float y = 0.05f;
 		if (direction == Direction.UP_LEFT ){
 			y = -1f;
 			direction = Direction.LEFT;

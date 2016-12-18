@@ -62,9 +62,13 @@ public class GameServer {
 	private IntVec worldSize = new IntVec(800, 600);
 
 	public GameServer(RenderMode renderMode, String textureFolder) {
-		serverWindow = new ServerWindow();
-		serverWindow.setOnClose(() -> System.exit(0));
-		serverWindow.setVisible(true);
+		if  ( renderMode == RenderMode.CONSOLE ){
+			serverWindow = new ConsoleServerWindow();
+			serverWindow.setOnClose(() -> System.out.println("Server closed"));
+		} else {
+			serverWindow = new SwingServerWindow();
+			serverWindow.setOnClose(() -> System.exit(0));
+		}
 
 		serverWindow.publishMessage("Loading textures...");
 		try {
@@ -104,6 +108,9 @@ public class GameServer {
 					it.remove();
 					serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
 					//Provavelmente algo mais acontecerá quando isso ocorrer.
+					if (c.getRole() == PlayerRole.TANK && running){
+						running = false;
+					}
 				}
 			}
 		}, 0, 1, TimeUnit.SECONDS);
@@ -146,6 +153,8 @@ public class GameServer {
 		while (running) {
 			beginGame();
 		}
+		
+		tankIndex = -1;
 	}
 
 	private void initializeTank(Client c) {
@@ -174,7 +183,7 @@ public class GameServer {
 		
 		lastFrame = System.nanoTime();
 		
-		while (true) {
+		while (running) {
 			try {
 				long time = System.nanoTime();
 				float delta = (float) ((time - lastFrame) / 1E6);
@@ -198,12 +207,14 @@ public class GameServer {
 				insertNewClients();
 				
 				lastFrame = time;
+				
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 		
-		//return false;
+		return false;
 	}
 
 	private void insertNewClients() {

@@ -104,8 +104,18 @@ public class Application {
 		dialog.setVisible(true);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	}
+	
+	public static void runServer(){
+		new GameServer(RenderMode.CONSOLE, "regular");
+	}
 
 	public static void main(String[] args) {
+		for (String a : args) {
+			if ( a.equals("console") ){
+				runServer();
+				return;
+			}
+		}
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
