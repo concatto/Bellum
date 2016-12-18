@@ -3,7 +3,6 @@ package br.univali.game.controllers;
 import br.univali.game.GameConstants;
 import br.univali.game.Spawner;
 import br.univali.game.objects.Enemy;
-import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.util.Direction;
 import br.univali.game.util.IntVec;
 
@@ -14,10 +13,9 @@ public class HelicopterController extends PlayerController {
 	
 	private Enemy helicopter;
 	
-	public HelicopterController(Spawner spawner, GameObjectCollection collection, IntVec windowSize, Enemy helicopter) {
-		super(spawner,collection,windowSize);
+	public HelicopterController(Spawner spawner,IntVec windowSize, Enemy helicopter) {
+		super(spawner, windowSize);
 		this.helicopter = helicopter;
-//		helicopter = collection.getHelicopter();
 	}
 	
 	@Override
@@ -40,17 +38,18 @@ public class HelicopterController extends PlayerController {
 			return computed;
 		}
 		
-		switch ( computed )
-		{
-			case NONE:
-				if ( up ) 	return Direction.UP;
-				if ( down ) return Direction.DOWN;
-			case LEFT:
-				if ( up )   return Direction.UP_LEFT;
-				if ( down ) return Direction.DOWN_LEFT;
-			case RIGHT:
-				if ( up )   return Direction.UP_RIGHT;
-				if ( down ) return Direction.DOWN_RIGHT;
+		switch ( computed ){
+		case NONE:
+			if ( up ) 	return Direction.UP;
+			if ( down ) return Direction.DOWN;
+		case LEFT:
+			if ( up )   return Direction.UP_LEFT;
+			if ( down ) return Direction.DOWN_LEFT;
+		case RIGHT:
+			if ( up )   return Direction.UP_RIGHT;
+			if ( down ) return Direction.DOWN_RIGHT;
+		default:
+			break;
 		}
 		return computed;
 	}

@@ -8,7 +8,6 @@ import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.event.input.MouseEvent;
-import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.util.Direction;
 import br.univali.game.util.IntVec;
 
@@ -24,14 +23,12 @@ public abstract class PlayerController {
 	private int rightKey = 'D';
 
 	protected Spawner spawner;
-	protected GameObjectCollection collection;
 	
 	protected IntVec mousePosition;
 	protected IntVec windowSize;
 	
-	public PlayerController(Spawner spawner, GameObjectCollection collection, IntVec windowSize) {
+	public PlayerController(Spawner spawner, IntVec windowSize) {
 		this.spawner = spawner;
-		this.collection = collection;
 		this.windowSize = windowSize;
 	}
 	
@@ -81,6 +78,10 @@ public abstract class PlayerController {
 	
 	public Set<Integer> getPressedKeys() {
 		return pressedKeys;
+	}
+	
+	public void resetFlags() {
+		lastBullet = 0;
 	}
 	
 	public abstract void update(float delta);  

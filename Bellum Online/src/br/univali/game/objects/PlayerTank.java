@@ -5,8 +5,9 @@ public class PlayerTank extends CombatObject {
 	private boolean shielded = false;
 	private boolean poweredUp = false;
 	private float shieldEnergy = 1;
+	private float cannonCharge = 0;
 	private float powerupTime = 0;
-	private boolean cannonCharging = false;
+	private float cannonRecovery = 0;
 	
 	public PlayerTank() {
 		
@@ -45,11 +46,19 @@ public class PlayerTank extends CombatObject {
 		this.powerupTime = powerupTime;
 	}
 
-	public boolean isCannonCharging() {
-		return cannonCharging;
+	public float getCannonCharge() {
+		return cannonCharge;
 	}
 	
-	public void setCannonCharging(boolean cannonCharging) {
-		this.cannonCharging = cannonCharging;
+	public void setCannonCharge(float cannonCharge) {
+		this.cannonCharge = cannonCharge;
+	}
+
+	public void setCannonRecovery(float cannonRecovery) {
+		this.cannonRecovery = cannonRecovery;
+	}
+	
+	public float getCannonRecovery() {
+		return cannonRecovery;
 	}
 }

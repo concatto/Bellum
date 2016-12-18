@@ -1,6 +1,7 @@
 package br.univali.game.controllers;
 
 import br.univali.game.GameConstants;
+import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;
@@ -17,6 +18,7 @@ public class BaseHUD {
 	protected GameWindow window;
 	protected Renderer renderer;
 	protected CombatObject playerObject;
+	private GameScore score;
 		
 	public BaseHUD(GameObjectCollection collection, GameWindow window) {
 		this.collection = collection;
@@ -26,12 +28,20 @@ public class BaseHUD {
 	
 	public void draw() {
 		drawPlayerHealthBar();
+		drawScore();
 		
 		for (Enemy enemy : collection.getEnemies()) {
 			drawEnemyHealth(enemy);
 		}
 	}
 	
+	private void drawScore() {
+		renderer.setFont(GameFont.MEDIUM);
+		renderer.setColor(0, 0, 0);
+		renderer.drawText("Helicopters: " + score.getHelicoptersScore(), 400, 10);
+		renderer.drawText("Tank: " + score.getTankScore(), 400, 40);
+	}
+
 	protected void drawIndicatorBar(int index, float fraction, float red, float green, float blue) {
 		drawIndicatorBar(index, fraction, red, green, blue, true);
 	}
@@ -78,7 +88,7 @@ public class BaseHUD {
 		float width = enemy.getWidth() * GameConstants.HEALTH_BAR_WIDTH_COEF;
 		float height = GameConstants.HEALTH_BAR_HEIGHT;
 		
-		FloatVec center = Geometry.center(enemy.getBoundingBox());
+		FloatVec center = Geometry.centralPoint(enemy.getBoundingBox());
 		float x = center.x - (width / 2);
 		float y = enemy.getY() - GameConstants.HEALTH_BAR_Y_OFFSET;
 		
@@ -98,5 +108,9 @@ public class BaseHUD {
 	
 	public void setPlayerObject(CombatObject playerObject) {
 		this.playerObject = playerObject;
+	}
+
+	public void setGameScore(GameScore score) {
+		this.score = score;
 	}
 }

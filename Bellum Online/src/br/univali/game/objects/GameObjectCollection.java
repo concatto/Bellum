@@ -101,5 +101,10 @@ public class GameObjectCollection implements Serializable {
 	public void removePickup(DrawableObject pickup) {
 		pickups.remove(pickup);
 	}
+
+	public void removeEffect(DrawableObject effect) {
+		effects.remove(effect);
+		
+	}
 }
 

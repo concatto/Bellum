@@ -25,8 +25,6 @@ import br.univali.game.controllers.LogicController;
 import br.univali.game.controllers.PhysicsController;
 import br.univali.game.controllers.TankController;
 import br.univali.game.graphics.TextureManager;
-import br.univali.game.objects.CombatObject;
-import br.univali.game.objects.DrawableObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
@@ -35,7 +33,6 @@ import br.univali.game.remote.GameConnectionImpl;
 import br.univali.game.remote.GameInformation;
 import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
-import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntVec;
 import br.univali.game.window.RenderMode;
 
@@ -127,14 +124,14 @@ public class GameServer {
 				PlayerTank tank = spawner.spawnTank(worldSize.x / 2f, worldSize.y - GameConstants.GROUND_Y_OFFSET);
 				
 				collection.addPlayerObject(c.getIdentifier(), tank);
-				c.setController(new TankController(spawner, collection, worldSize, tank));
+				c.setController(new TankController(spawner, worldSize, tank));
 				c.getConnection().setRole(PlayerRole.TANK);
 			} else {
 				Enemy helicopter = spawner.spawnHelicopter();
 				logic.respawnHelicopter(helicopter);
 				
 				collection.addPlayerObject(c.getIdentifier(), helicopter);
-				c.setController(new HelicopterController(spawner, collection, worldSize, helicopter));
+				c.setController(new HelicopterController(spawner, worldSize, helicopter));
 				c.getConnection().setRole(PlayerRole.HELICOPTER);
 			}
 			
@@ -212,6 +209,7 @@ public class GameServer {
 		
 		clients.add(client);
 		
+		conn.setGameScoreCallable(() -> logic.getScore());
 		conn.setServerReadyCallable(() -> running);
 		conn.setGameInformationCallable(() -> {
 			return new GameInformation(clients.stream()

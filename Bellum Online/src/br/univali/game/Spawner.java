@@ -79,7 +79,7 @@ public class Spawner {
 	}
 	
 	public void spawnCannonball(float force, GameObject origin, FloatVec destination) {
-		System.out.println("Cannon force = " + force);
+		force = GameConstants.MIN_CANNONBALL_TIME + force * GameConstants.MAX_CANNONBALL_TIME;
 		Projectile ball = makeProjectile(origin, destination, ObjectType.CANNONBALL);
 		ball.setSpeed(ball.getSpeed() * force);
 		
@@ -93,7 +93,7 @@ public class Spawner {
 	}
 	
 	private Projectile makeProjectile(GameObject source, FloatVec destination, ObjectType type) {		
-		FloatVec sourceCenter = Geometry.center(source.getBoundingBox());
+		FloatVec sourceCenter = Geometry.centralPoint(source.getBoundingBox());
 		
 		double theta = Geometry.angle(sourceCenter, destination);
 		
@@ -188,6 +188,8 @@ public class Spawner {
 		
 		fire.setFrameDuration(20);
 		fire.setAnimationRepeated(true);
+		fire.setPhysical(false);
+		
 		collection.addEffect(fire);
 		return fire;
 	}

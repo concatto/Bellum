@@ -25,35 +25,45 @@ public class LogicController {
 	private GameObjectCollection collection;
 	private Spawner spawner;
 	private IntVec windowSize;
-	private RandomizedObjectEngine randomizedEngine;
+	private RandomizedObjectEngine engine;
+	private EffectsController effects;
 	private float groundLevel;
+	
+	private GameScore score;
 
 	public LogicController(GameObjectCollection collection, Spawner spawner, IntVec windowSize) {
 		this.collection = collection;
 		this.spawner = spawner;
 		this.windowSize = windowSize;
 		this.groundLevel = windowSize.y - GameConstants.GROUND_Y_OFFSET;
-		this.randomizedEngine = new RandomizedObjectEngine(collection, windowSize);
+		this.engine = new RandomizedObjectEngine(collection, windowSize);
+		this.effects = new EffectsController(collection, spawner);
+		this.score = new GameScore();
 	}
 
+	public GameScore getScore() {
+		return score;
+	}
+	
 	public void update(float delta) {
 		cleanupBullets();
 		
-		if (randomizedEngine.shouldGenerateEnemy()) {
-			randomizedEngine.randomizeEnemy(spawner.spawnHelicopter());
+		if (engine.shouldGenerateEnemy()) {
+			engine.randomizeEnemy(spawner.spawnHelicopter());
 		}
 		
-		if (randomizedEngine.shouldGenerateHealth()) {
-			spawner.spawnHealthPickup(randomizedEngine.generatePickupPosition());
+		if (engine.shouldGenerateHealth()) {
+			spawner.spawnHealthPickup(engine.generatePickupPosition());
 		}
 		
-		if (randomizedEngine.shouldGenerateSpecial()) {
-			spawner.spawnSpecialPickup(randomizedEngine.generatePickupPosition());
+		if (engine.shouldGenerateSpecial()) {
+			spawner.spawnSpecialPickup(engine.generatePickupPosition());
 		}
 		
 		updateEnemies(delta);
 		handleDeaths();
 		handleRespawns();
+		effects.update(delta);
 	}
 	
 	private void handleRespawns() {
@@ -68,10 +78,13 @@ public class LogicController {
 			Enemy e = it.next();
 			
 			if (e.hasDied()) {
-				spawner.spawnExplosion(Geometry.center(e.getBoundingBox()));
+				spawner.spawnExplosion(Geometry.centralPoint(e.getBoundingBox()));
+				score.incrementTankScore(10);
+				
 				if (e.isBot()) {
 					it.remove();
 				} else {
+					effects.putFireTo(e);
 					e.prepareRespawn(3000);
 					e.setAffectedByGravity(true);
 				}
@@ -107,7 +120,7 @@ public class LogicController {
 	}
 	
 	private void terminateProjectile(Projectile p) {
-		FloatVec center = Geometry.center(p.getBoundingBox());
+		FloatVec center = Geometry.centralPoint(p.getBoundingBox());
 		
 		if (p.getType() == ObjectType.CANNONBALL) {
 			spawner.spawnExplosion(center);
@@ -161,10 +174,13 @@ public class LogicController {
 			PlayerTank tank = collection.getTank();
 			
 			int damage = damageForProjectile(p);
+			long points = 10;
 			if (tank.isShielded()) {
 				damage -= damage * GameConstants.SHIELD_DAMAGE_REDUCTION;
+				points = 1;
 			}
 			tank.setHealth(tank.getHealth() - damage);
+			score.incrementHelicoptersScore(points);
 			
 			terminateProjectile(p);
 		}
@@ -194,7 +210,7 @@ public class LogicController {
 		long time = System.currentTimeMillis();
 		if (time - enemy.getLastShot() > enemy.getShotInterval()) {
 			//SoundEffect.ENEMYSHOT.play();
-			spawner.spawnBullet(enemy, Geometry.center(collection.getTank().getBoundingBox()));
+			spawner.spawnBullet(enemy, Geometry.centralPoint(collection.getTank().getBoundingBox()));
 			
 			enemy.setLastShot(time);
 			enemy.setShotInterval(Math.round(Utils.generateRandom(300, 2000)));
@@ -228,6 +244,7 @@ public class LogicController {
 	public void respawnHelicopter(CombatObject helicopter) {
 		helicopter.respawn();
 		helicopter.setAffectedByGravity(false);
-		randomizedEngine.randomizePlayerHelicopterPosition(helicopter);
+		engine.randomizePlayerHelicopterPosition(helicopter);
+		effects.removeFireFrom(helicopter);
 	}
 }

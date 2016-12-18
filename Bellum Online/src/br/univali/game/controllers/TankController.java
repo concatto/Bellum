@@ -8,12 +8,8 @@ import br.univali.game.Spawner;
 import br.univali.game.event.input.InputEventType;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
-import br.univali.game.objects.DrawableObject;
-import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.util.Direction;
-import br.univali.game.util.FloatVec;
-import br.univali.game.util.Geometry;
 import br.univali.game.util.IntVec;
 import br.univali.game.util.Utils;
 
@@ -24,12 +20,9 @@ public class TankController extends PlayerController {
 	private int shieldKey = Keyboard.SPACE;
 	
 	private PlayerTank tank;
-	private DrawableObject shield;
-	
-	private long lastCannon = 0;
 
-	public TankController(Spawner spawner, GameObjectCollection collection, IntVec windowSize, PlayerTank tank) {
-		super(spawner, collection, windowSize);
+	public TankController(Spawner spawner, IntVec windowSize, PlayerTank tank) {
+		super(spawner, windowSize);
 		this.tank = tank;
 	}
 	
@@ -84,7 +77,7 @@ public class TankController extends PlayerController {
 	
 	public void updateTank(float delta) {
 		handleMovement();
-		handleWeapons();
+		handleWeapons(delta);
 		handleShield(delta);
 		
 		if (tank.isPoweredUp()) {
@@ -97,7 +90,7 @@ public class TankController extends PlayerController {
 		}
 	}
 
-	private void handleWeapons() {
+	private void handleWeapons(float delta) {
 		long time = System.currentTimeMillis();
 		
 		//System.out.println(pressedButtons.contains(bulletButton));
@@ -112,19 +105,22 @@ public class TankController extends PlayerController {
 			}
 		}
 		
-		if (pressedButtons.contains(cannonballButton)) {
-			if (canFireCannon() && !tank.isCannonCharging()) {
-				lastCannon = time;
-				tank.setCannonCharging(true);
-			}
+		float recovery = tank.getCannonRecovery();
+		
+		if (pressedButtons.contains(cannonballButton) && recovery == 0) {
+			float increment = delta / GameConstants.MAX_CANNONBALL_TIME;
+			tank.setCannonCharge(Math.min(1, tank.getCannonCharge() + increment));
 		} else {
-			if (tank.isCannonCharging()) {
-				float force = getCannonCharge() + GameConstants.MIN_CANNONBALL_TIME;
-				spawner.spawnCannonball(force, tank, mousePosition.toFloat());
-				
-				lastCannon = time;
+			if (recovery > 0) {
+				tank.setCannonRecovery(Math.max(0, recovery - (delta / GameConstants.CANNON_COOLDOWN)));
 			}
-			tank.setCannonCharging(false);
+			
+			float charge = tank.getCannonCharge();
+			if (charge > 0) {
+				spawner.spawnCannonball(charge, tank, mousePosition.toFloat());
+				tank.setCannonCharge(0);
+				tank.setCannonRecovery(1);
+			}
 		}
 	}
 
@@ -139,25 +135,10 @@ public class TankController extends PlayerController {
 		newEnergy = (float) Utils.clamp(newEnergy, 0, 1);
 		tank.setShieldEnergy(newEnergy);
 
-		if (newEnergy == 0) {
+		if (newEnergy == 0 || !pressedKeys.contains(shieldKey)) {
 			tank.setShielded(false);
-			collection.removeObject(shield);
-		} else if (pressedKeys.contains(shieldKey)) {
-			if (newEnergy > 0.2 || (tank.getShieldEnergy() > 0 && tank.isShielded())) {
-				if (!tank.isShielded()) {
-					//SoundEffect.SHIELD.play();
-					shield = spawner.spawnShield();
-				}
-				
-				tank.setShielded(true);
-				FloatVec center = Geometry.center(tank.getBoundingBox());
-				shield.setPosition(Geometry.toTopLeft(shield.getSize(), center));
-			}
-		} else {
-			if (tank.isShielded()) {
-				collection.removeObject(shield);
-			}
-			tank.setShielded(false);
+		} else if (newEnergy > 0.1){
+			tank.setShielded(true);
 		}
 	}
 
@@ -181,42 +162,12 @@ public class TankController extends PlayerController {
 		}
 	}
 	
-	public boolean isCannonCharging() {
-		return tank.isCannonCharging();
-	}
-	
-	public float getCannonCharge() {
-		float delta = System.currentTimeMillis() - lastCannon;
-		delta = Math.min(delta, GameConstants.MAX_CANNONBALL_TIME);
-		
-		return delta;
-	}
-	
-	public boolean canFireCannon() {
-		return getRemainingCannonCooldown() <= 0;
-	}
-
-	public boolean isCannonOnCooldown() {
-		return !isCannonCharging() && !canFireCannon();
-	}
-	
-	public float getRemainingCannonCooldown() {
-		float delta = System.currentTimeMillis() - lastCannon;
-		return Math.max(0, GameConstants.CANNON_COOLDOWN - delta);
-	}
-	
 	public Set<MouseButton> getPressedButtons() {
 		return pressedButtons;
 	}
 	
 	public Set<Integer> getPressedKeys() {
 		return pressedKeys;
-	}
-	
-	public void resetFlags() {
-		lastBullet = 0;
-		lastCannon = 0;
-		tank.setCannonCharging(false);
 	}
 
 	@Override

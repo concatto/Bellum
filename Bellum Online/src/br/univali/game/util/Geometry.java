@@ -54,8 +54,12 @@ public abstract class Geometry {
 		return euclideanDistance(vector, new FloatVec(0, 0));
 	}
 
-	public static FloatVec center(FloatRect rect) {
+	public static FloatVec centralPoint(FloatRect rect) {
 		return new FloatVec(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+	}
+	
+	public static FloatVec centralize(FloatRect subject, FloatRect context) {
+		return Geometry.toTopLeft(new FloatVec(subject.width, subject.height), Geometry.centralPoint(context));
 	}
 
 	public static float angle(FloatVec source, FloatVec destination) {

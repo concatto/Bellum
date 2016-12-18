@@ -16,7 +16,7 @@ public class TankHUD extends BaseHUD {
 	public void draw() {
 		super.draw();
 		
-		drawCannonCharge(1, false, false);
+		drawCannonCharge();
 		drawShieldEnergy();
 		
 		if (tank.isPoweredUp()) {
@@ -24,12 +24,10 @@ public class TankHUD extends BaseHUD {
 		}
 	}
 	
-	public void drawCannonCharge(float fraction, boolean cooldown, boolean charging) {
-		drawIndicatorBar(1, charging ? 1 : fraction, 0.384f, 0.795f, 0.474f);
+	public void drawCannonCharge() {
+		drawIndicatorBar(1, 1 - tank.getCannonRecovery(), 0.384f, 0.795f, 0.474f);
 		
-		if (charging) {
-			drawIndicatorBar(1, fraction, 0.615f, 0.964f, 0.69f, false);
-		}
+		drawIndicatorBar(1, tank.getCannonCharge(), 0.615f, 0.964f, 0.69f, false);
 	}
 	
 	public void drawShieldEnergy() {

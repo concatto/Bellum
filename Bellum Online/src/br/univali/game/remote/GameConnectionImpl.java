@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
 
 import br.univali.game.PlayerRole;
+import br.univali.game.controllers.GameScore;
 import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseEvent;
 import br.univali.game.util.IntVec;
@@ -17,6 +18,7 @@ public class GameConnectionImpl implements GameConnection {
 	
 	private Callable<GameInformation> gameInformationCallable;
 	private Callable<Boolean> serverReadyCallable;
+	private Callable<GameScore> gameScoreCallable;
 	private PlayerRole role = PlayerRole.NONE;
 	private String identifier;
 	
@@ -95,6 +97,16 @@ public class GameConnectionImpl implements GameConnection {
 	}
 	
 	@Override
+	public GameScore getGameScore() throws RemoteException {
+		try {
+			return gameScoreCallable.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	@Override
 	public boolean isServerReady() throws RemoteException {
 		try {
 			return serverReadyCallable.call();
@@ -117,5 +129,9 @@ public class GameConnectionImpl implements GameConnection {
 	@Override
 	public PlayerRole getRole() throws RemoteException {
 		return role;
+	}
+
+	public void setGameScoreCallable(Callable<GameScore> callable) {
+		this.gameScoreCallable = callable;		
 	}
 }

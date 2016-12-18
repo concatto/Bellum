@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 
 import br.univali.game.controllers.BaseHUD;
+import br.univali.game.controllers.GameScore;
 import br.univali.game.controllers.HelicopterHUD;
 import br.univali.game.controllers.TankHUD;
 import br.univali.game.graphics.GameFont;
@@ -51,6 +52,7 @@ public class GameScreen extends BaseScreen {
 			e.printStackTrace();
 		}
 		
+		GameScore score = null;
 		hud = createHUD();
 		running = true;
 		while (running) {
@@ -58,6 +60,7 @@ public class GameScreen extends BaseScreen {
 			
 			try {
 				playerObject = collection.getPlayerObject(connection.getIdentifier());
+				score = connection.getGameScore();
 				
 				if (connection.getRole() == PlayerRole.HELICOPTER) {
 					playerObject.setType(ObjectType.PLAYER_HELICOPTER);
@@ -68,6 +71,7 @@ public class GameScreen extends BaseScreen {
 			
 			hud.setCollection(collection);
 			hud.setPlayerObject(playerObject);
+			hud.setGameScore(score);
 			
 			drawCentralizedTexture(backgroundTexture);
 			drawObjects(collection);
