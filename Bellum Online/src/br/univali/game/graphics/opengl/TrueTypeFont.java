@@ -12,13 +12,10 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import org.lwjgl.opengl.GL11;
 
@@ -133,13 +130,6 @@ public class TrueTypeFont
             {
                 g2d.dispose();
                 pages.add(GLImageLoader.fromBufferedImage(pageImage));
-
-                try {
-    				ImageIO.write(pageImage, "png", new File("C:/Home/" + i + ".png"));
-    			} catch (IOException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			}
                 
                 pageImage = new BufferedImage(maxTexWidth, maxTexHeight, BufferedImage.TYPE_INT_ARGB);
                 

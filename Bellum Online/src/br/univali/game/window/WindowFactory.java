@@ -17,30 +17,30 @@ public class WindowFactory {
 	private static final File instancesFile = new File("./instancesfile");
 	
 	private static int nextWindowPosition(){
-		if (!instancesFile.exists()) {
-			try {
-				instancesFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-				return -1;
-			}
-		}
+//		if (!instancesFile.exists()) {
+//			try {
+//				instancesFile.createNewFile();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//				return -1;
+//			}
+//		}
 		
 		int n = -1;
-		try {
-			DataInputStream dis = new DataInputStream(new FileInputStream(instancesFile));
-			n = dis.readInt();
-			dis.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			DataOutputStream dos = new DataOutputStream(new FileOutputStream(instancesFile,false));
-			dos.writeInt((n+1)%4);
-			dos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			DataInputStream dis = new DataInputStream(new FileInputStream(instancesFile));
+//			n = dis.readInt();
+//			dis.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			DataOutputStream dos = new DataOutputStream(new FileOutputStream(instancesFile,false));
+//			dos.writeInt((n+1)%4);
+//			dos.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		return n;
 	}
 	

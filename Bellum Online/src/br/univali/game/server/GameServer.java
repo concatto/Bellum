@@ -59,6 +59,7 @@ public class GameServer {
 	private RemoteInterface remoteInterface;
 	
 	private IntVec worldSize = new IntVec(800, 600);
+	private List<Client> leavers = new ArrayList<>();
 
 	public GameServer(boolean useConsole) {
 		if  ( useConsole ){
@@ -104,15 +105,11 @@ public class GameServer {
 				
 				long delta = System.currentTimeMillis() - c.getConnection().getLastHeartbeat();
 				if (delta > HEARTBEAT_TIMEOUT) {
-					serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
-					//Provavelmente algo mais acontecerá quando isso ocorrer.
-					if (c.getRole() == PlayerRole.TANK){
-						running = false;
-					} else if (c.getRole() == PlayerRole.HELICOPTER) {
-						collection.removeEnemy((Enemy) collection.getPlayerObject(c.getIdentifier()));
+					if (running) {
+						leavers.add(c);
+					} else {
+						it.remove();
 					}
-					
-					it.remove();
 				}
 			}
 		}, 0, 1, TimeUnit.SECONDS);
@@ -213,7 +210,7 @@ public class GameServer {
 				
 				animation.updateAnimations(delta);
 				
-				insertNewClients();
+				updateClients();
 				
 				if (collection.getTank().isDead()) {
 					return true;
@@ -230,7 +227,7 @@ public class GameServer {
 		return false;
 	}
 
-	private void insertNewClients() {
+	private void updateClients() {
 		List<Client> toRemove = new ArrayList<>();
 		
 		newClients.forEach((c, count) -> {
@@ -244,6 +241,19 @@ public class GameServer {
 		});
 		
 		toRemove.forEach(newClients::remove);
+		
+		for (Client c : leavers) {
+			serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
+			if (c.getRole() == PlayerRole.TANK){
+				running = false;
+			} else if (c.getRole() == PlayerRole.HELICOPTER) {
+				collection.removeEnemy((Enemy) collection.getPlayerObject(c.getIdentifier()));
+			}
+			
+			clients.remove(c);
+		}
+		
+		leavers.clear();
 	}
 
 	public GameObjectCollection getGameObjectCollection() {

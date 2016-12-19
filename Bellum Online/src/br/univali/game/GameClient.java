@@ -107,7 +107,7 @@ public class GameClient {
 				}
 				
 			} catch (RemoteException e1) {
-				e1.printStackTrace();
+				
 			}
 		}, 0, 16, TimeUnit.MILLISECONDS);
 	}

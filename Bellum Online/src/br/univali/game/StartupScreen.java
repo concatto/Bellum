@@ -64,6 +64,8 @@ public class StartupScreen extends BaseScreen {
 			renderer.setFont(GameFont.MEDIUM);
 			renderer.setColor(0.9f, 0, 0, 1);
 			centralizeAndDraw("Failed to connect to server.");
+			
+			renderer.setFont(GameFont.SMALL);
 			centralizeXAndDraw(e.getLocalizedMessage(), 350);
 			
 			renderer.draw();

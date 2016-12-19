@@ -41,7 +41,7 @@ public class RandomizedObjectEngine {
 			
 			//Interpolação (segundos, multiplicador) entre (0, 1) e (90, 3)
 			float multiplier = Utils.lerp(delta, 0, 1, 90000, 3);
-			float chance = (1 - Utils.growthCurve(enemies, 0.28f)) * multiplier;
+			float chance = (1 - Utils.growthCurve(enemies, 0.21f)) * multiplier;
 			if (Utils.generateRandom() < chance) {
 				return true;
 			}
