@@ -19,7 +19,7 @@ public class RandomizedObjectEngine {
 	private long specialPerSecond = 0;
 	private long enemyInterval = 0;
 	private long lastSpawn = 0;
-	private float maxEnemies = 6;
+	private float maxEnemies = 1;
 	private GameObjectCollection collection;
 	private IntVec windowSize;
 	
@@ -38,7 +38,7 @@ public class RandomizedObjectEngine {
 		long delta = System.currentTimeMillis() - lastSpawn;
 		int enemyCount = collection.getEnemies().size();
 		
-		if (delta > enemyInterval && enemyCount < maxEnemies) {
+		if (delta > enemyInterval && enemyCount < getMaxEnemies()) {
 			enemyInterval = (long) (Utils.generateRandom(800, 2000));
 			lastSpawn = System.currentTimeMillis();
 			return true;
@@ -127,5 +127,10 @@ public class RandomizedObjectEngine {
 		float yMax = (windowSize.y / 3f) - helicopter.getHeight();
 	
 		helicopter.setPosition(new FloatVec(Utils.generateRandom(0, xMax), Utils.generateRandom(0, yMax)));
+	}
+
+	public float getMaxEnemies() {
+		maxEnemies += 0.0000005;
+		return maxEnemies;
 	}
 }

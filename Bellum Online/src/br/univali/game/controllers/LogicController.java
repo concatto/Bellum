@@ -49,7 +49,7 @@ public class LogicController {
 		cleanupBullets();
 		
 		if (engine.shouldGenerateEnemy()) {
-//			engine.randomizeEnemy(spawner.spawnHelicopter());
+			engine.randomizeEnemy(spawner.spawnHelicopter());
 		}
 		
 		if (engine.shouldGenerateHealth()) {
