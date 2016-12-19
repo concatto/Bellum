@@ -5,8 +5,6 @@ import java.util.Set;
 import br.univali.game.GameConstants;
 import br.univali.game.Keyboard;
 import br.univali.game.Spawner;
-import br.univali.game.event.input.InputEventType;
-import br.univali.game.event.input.KeyboardEvent;
 import br.univali.game.event.input.MouseButton;
 import br.univali.game.objects.PlayerTank;
 import br.univali.game.util.Direction;
@@ -44,14 +42,6 @@ public class TankController extends PlayerController {
 	
 	public void setCannonballButton(MouseButton cannonballButton) {
 		this.cannonballButton = cannonballButton;
-	}
-
-	public void handleKey(KeyboardEvent e) {
-		if (e.getType() == InputEventType.PRESS) {
-			pressedKeys.add(e.getKey());
-		} else {
-			pressedKeys.remove(e.getKey());
-		}
 	}
 
 	public Direction computeDirection() {
