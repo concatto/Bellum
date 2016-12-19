@@ -247,7 +247,11 @@ public class GameServer {
 		return collection;
 	}
 	
-	public GameConnection createConnection() {
+	public GameConnection createConnection() throws ServerFullException {
+		if (clients.size() >= 5) {
+			throw new ServerFullException("Server is full.");
+		}
+		
 		String identifier;
 		boolean matches = false;
 		do {

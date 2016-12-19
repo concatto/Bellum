@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.server.GameServer;
+import br.univali.game.server.ServerFullException;
 
 public class RemoteInterfaceImpl implements RemoteInterface {
 	private GameServer server;
@@ -19,12 +20,8 @@ public class RemoteInterfaceImpl implements RemoteInterface {
 	}
 
 	@Override
-	public GameConnection connectToServer() throws RemoteException {
-		try {
-			GameConnection conn = server.createConnection();
-			return (GameConnection) UnicastRemoteObject.exportObject(conn, 8080);
-		} catch (Exception e) {
-			throw new RemoteException("Connection creation failed to execute");
-		}
+	public GameConnection connectToServer() throws RemoteException, ServerFullException {
+		GameConnection conn = server.createConnection();
+		return (GameConnection) UnicastRemoteObject.exportObject(conn, 8080);
 	}
 }

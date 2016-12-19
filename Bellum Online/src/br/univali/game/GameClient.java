@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import br.univali.game.remote.GameConnection;
 import br.univali.game.remote.RemoteInterface;
+import br.univali.game.server.ServerFullException;
 import br.univali.game.window.GameWindow;
 import br.univali.game.window.RenderMode;
 import br.univali.game.window.WindowFactory;
@@ -85,9 +86,9 @@ public class GameClient {
 				if (connection.isServerReady()) {
 					return true;
 				}
-			} catch (RemoteException | NotBoundException e) {
+			} catch (RemoteException | NotBoundException | ServerFullException e) {
 				e.printStackTrace();
-				startup.displayConnectionFailure();
+				startup.displayConnectionFailure(e);
 				server = null;
 			}
 		} while (server == null);

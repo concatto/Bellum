@@ -54,7 +54,7 @@ public class StartupScreen extends BaseScreen {
 		return input;
 	}
 	
-	public void displayConnectionFailure() {
+	public void displayConnectionFailure(Exception e) {
 		Countdown c = Countdown.createAndStart(3000);
 		
 		while (!c.finished()) {
@@ -64,6 +64,7 @@ public class StartupScreen extends BaseScreen {
 			renderer.setFont(GameFont.MEDIUM);
 			renderer.setColor(0.9f, 0, 0, 1);
 			centralizeAndDraw("Failed to connect to server.");
+			centralizeXAndDraw(e.getLocalizedMessage(), 350);
 			
 			renderer.draw();
 		}

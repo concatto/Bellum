@@ -79,7 +79,7 @@ public class LogicController {
 			
 			if (e.hasDied()) {
 				spawner.spawnExplosion(Geometry.centralPoint(e.getBoundingBox()));
-				score.incrementTankScore(5);
+				score.incrementTankScore(10);
 				
 				if (e.isBot()) {
 					it.remove();

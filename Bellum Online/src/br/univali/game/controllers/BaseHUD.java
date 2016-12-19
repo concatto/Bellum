@@ -29,11 +29,15 @@ public class BaseHUD {
 	
 	public void draw() {
 		drawPlayerHealthBar();
-		scoreBehaviour.apply(renderer, score);
+		drawScore();
 		
 		for (Enemy enemy : collection.getEnemies()) {
 			drawEnemyHealth(enemy);
 		}
+	}
+	
+	public void drawScore() {
+		scoreBehaviour.apply(renderer, score);
 	}
 	
 	protected void drawIndicatorBar(int index, float fraction, float red, float green, float blue) {
