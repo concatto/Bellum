@@ -1,4 +1,4 @@
 #!/bin/bash
-java -cp ./bin/ -Djava.library.path=native br.univali.game.Application "$@"
+java -Djava.library.path=native -cp ./bin/ br.univali.game.Application "$@"
 
 

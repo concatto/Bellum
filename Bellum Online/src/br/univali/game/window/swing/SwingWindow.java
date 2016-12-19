@@ -31,7 +31,7 @@ public class SwingWindow extends GameWindow {
 	private JPanel mainPanel;
 	private Set<Integer> pressedKeys = new HashSet<>();
 
-	public SwingWindow(String title, int width, int height) {
+	public SwingWindow(String title, IntVec position, int width, int height) {
 		super(title, width, height);
 		
 		window = new JFrame();
@@ -44,8 +44,8 @@ public class SwingWindow extends GameWindow {
 		
 		window.add(mainPanel);
 		window.pack();
+		window.setLocation(position.x, position.y);
 		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		window.setLocationRelativeTo(null);
 		window.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
