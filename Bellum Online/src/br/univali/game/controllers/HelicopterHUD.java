@@ -34,9 +34,9 @@ public class HelicopterHUD extends BaseHUD {
 	@Override
 	protected void drawScore() {
 		renderer.setFont(GameFont.MEDIUM_BOLD);
-		renderer.setColor(0, 0.3f, 0);
+		renderer.setColor(0, 0.5f, 0);
 		renderer.drawText("Helicopters: " + score.getHelicoptersScore(), 400, 10);
-		renderer.setColor(0.3f, 0f, 0);
+		renderer.setColor(0.5f, 0f, 0);
 		renderer.drawText("Tank: " + score.getTankScore(), 400, 40);
 	}
 }

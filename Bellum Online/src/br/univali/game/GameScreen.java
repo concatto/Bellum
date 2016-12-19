@@ -33,6 +33,8 @@ public class GameScreen extends BaseScreen {
 	private boolean running = false;
 	private boolean respawnScreenPrepared = false;
 	private Countdown endingCountdown;
+	private GameScore score;
+	private PlayerRole role;
 //	private LogicController logic;
 //	private PhysicsController physics;
 //	private AnimationController animation;
@@ -42,7 +44,7 @@ public class GameScreen extends BaseScreen {
 		super(window);
 		this.connection = connection;
 		this.backgroundTexture = Texture.load("images/background.png");
-		this.manager = new TextureManager("regular");
+		this.manager = new TextureManager();
 		
 		try {
 			manager.loadAllTextures();
@@ -64,11 +66,16 @@ public class GameScreen extends BaseScreen {
 			e.printStackTrace();
 		}
 		
-		GameScore score = null;
+		try {
+			role = connection.getRole();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		score = null;
 		hud = createHUD();
 		running = true;
-		endingCountdown = new Countdown(5000);
-		
+		endingCountdown = new Countdown(10000);
 		long lastFrame = System.nanoTime();
 		
 		while (running) {
@@ -81,7 +88,7 @@ public class GameScreen extends BaseScreen {
 				playerObject = collection.getPlayerObject(connection.getIdentifier());
 				score = connection.getGameScore();
 				
-				if (connection.getRole() == PlayerRole.HELICOPTER) {
+				if (role == PlayerRole.HELICOPTER) {
 					playerObject.setType(ObjectType.PLAYER_HELICOPTER);
 				}
 			} catch (RemoteException e) {
@@ -135,12 +142,27 @@ public class GameScreen extends BaseScreen {
 		
 		float textAlpha = getOverlayAlpha() * (1 / targetAlpha);
 		
+		boolean tankWon = score.getTankScore() > score.getHelicoptersScore();
+		String text = tankWon ? "The Tank won the game!" : "The Helicopters won the game!";
+		
+		if (score.getHelicoptersScore() == score.getTankScore()) {
+			renderer.setColor(1, 1, 1, textAlpha);
+			text = "Draw! No one wins!";
+		} else if (tankWon && role == PlayerRole.TANK || !tankWon && role == PlayerRole.HELICOPTER) {
+			renderer.setColor(0.2f, 1, 0.2f, textAlpha);
+		} else {
+			renderer.setColor(1, 0.2f, 0.2f, textAlpha);
+		}
+		
+		renderer.setFont(GameFont.GIGANTIC);
+		centralizeXAndDraw("GAME ENDED", 150);
+		
 		renderer.setFont(GameFont.LARGE);
-		renderer.setColor(1, 1, 1, textAlpha); //Atenção aqui
-		centralizeXAndDraw("GAME ENDED", 250);
+		centralizeXAndDraw(text, 300);
 		
 		renderer.setFont(GameFont.MEDIUM);
-		centralizeXAndDraw(String.format("Resuming in %.2fs", endingCountdown.remainingSeconds()), 400);
+		renderer.setColor(1, 1, 1, textAlpha);
+		centralizeXAndDraw(String.format("Resuming in %.2fs", endingCountdown.remainingSeconds()), 450);
 		
 		if (endingCountdown.finished()) {
 			running = false;
@@ -148,17 +170,12 @@ public class GameScreen extends BaseScreen {
 	}
 
 	private BaseHUD createHUD() {
-		try {
-			switch (connection.getRole()) {
-			case HELICOPTER:
-				return new HelicopterHUD(collection, window);
-			case TANK:
-				return new TankHUD(collection, window);
-			default:
-				return null;
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
+		switch (role) {
+		case HELICOPTER:
+			return new HelicopterHUD(collection, window);
+		case TANK:
+			return new TankHUD(collection, window);
+		default:
 			return null;
 		}
 	}

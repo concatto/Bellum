@@ -50,8 +50,10 @@ public class GLWindow extends GameWindow {
 		
 		GLFW.glfwMakeContextCurrent(window);
 		GL.createCapabilities();
+		System.out.println("window created");
 		
 		renderer = new GLRenderer(window);
+		System.out.println("Renderer created");
 		
 		installListeners();
 		setTitle(title);

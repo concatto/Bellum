@@ -13,10 +13,9 @@ import br.univali.game.util.IntVec;
 public class TextureManager {
 	private Texture notFound;
 	private Map<ObjectType, Texture> objectTextures = new HashMap<>();
-	private String textureFolder;
 	
-	public TextureManager(String textureFolder) {
-		this.textureFolder = textureFolder;
+	public TextureManager() {
+		
 	}
 	
 	public void loadAllTextures() throws IOException {
@@ -38,7 +37,7 @@ public class TextureManager {
 	}
 	
 	private Texture loadTexture(String path, int rows, int columns) throws IOException {
-		return Texture.load(textureFolder + "/" + path,
+		return Texture.load("images/" + path,
 				size -> generateFrames(size, rows, columns));
 	}
 	

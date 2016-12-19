@@ -42,6 +42,7 @@ public class SwingWindow extends GameWindow {
 		
 		renderer = new SwingRenderer(mainPanel);
 		
+		window.setResizable(false);
 		window.add(mainPanel);
 		window.pack();
 		window.setLocation(position.x, position.y);

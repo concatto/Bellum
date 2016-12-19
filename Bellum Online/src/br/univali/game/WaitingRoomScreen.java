@@ -122,7 +122,7 @@ public class WaitingRoomScreen extends BaseScreen {
 				
 				if (self) {
 					IntVec tSize = renderer.computeTextSize(username);
-					renderer.drawRectangle(50, y + tSize.y, tSize.x, 0.5f);
+					renderer.drawRectangle(50, y + tSize.y, tSize.x, 1);
 				}
 			}
 		} catch (ConnectException ce) {

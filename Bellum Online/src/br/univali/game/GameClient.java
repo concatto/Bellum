@@ -28,7 +28,7 @@ public class GameClient {
 	private WaitingRoomScreen room;
 	private StartupScreen startup;
 	
-	public GameClient(RenderMode renderMode, String textureFolder) {
+	public GameClient(RenderMode renderMode) {
 		window = WindowFactory.createWindow(renderMode, "Bellum", 800, 600);
 		window.onCloseRequested(() -> System.exit(0));
 		

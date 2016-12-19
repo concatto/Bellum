@@ -1,11 +1,14 @@
 package br.univali.game;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -21,72 +24,46 @@ public class Application {
 	public Application() {
 		JDialog dialog = new JDialog((Dialog) null, "Bellum");
 
-		JRadioButton normal = new JRadioButton("Normal");
-		JRadioButton halloween = new JRadioButton("Halloween");
-
-		JPanel themeRadioPanel = new JPanel();
-		themeRadioPanel.setLayout(new BoxLayout(themeRadioPanel, BoxLayout.Y_AXIS));
-		themeRadioPanel.add(normal);
-		themeRadioPanel.add(halloween);
-		themeRadioPanel.setBorder(BorderFactory.createTitledBorder("Tema"));
-		themeRadioPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-
-		JPanel themeContainer = new JPanel();
-		themeContainer.add(themeRadioPanel);
-		themeContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-		ButtonGroup themeGroup = new ButtonGroup();
-		themeGroup.add(normal);
-		themeGroup.add(halloween);
-
-		themeGroup.setSelected(normal.getModel(), true);
-
-		JRadioButton client = new JRadioButton("Cliente");
+		JRadioButton clientSwing = new JRadioButton("Cliente (Swing)");
+		JRadioButton clientGL = new JRadioButton("Cliente (OpenGL)");
 		JRadioButton server = new JRadioButton("Servidor");
 
 		JPanel modeRadioPanel = new JPanel();
 		modeRadioPanel.setLayout(new BoxLayout(modeRadioPanel, BoxLayout.Y_AXIS));
-		modeRadioPanel.add(client);
+		modeRadioPanel.add(clientSwing);
+		modeRadioPanel.add(clientGL);
 		modeRadioPanel.add(server);
 		modeRadioPanel.setBorder(BorderFactory.createTitledBorder("Modo"));
 		modeRadioPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
-		JPanel modeContainer = new JPanel();
-		modeContainer.add(modeRadioPanel);
-		modeContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
 		ButtonGroup modeGroup = new ButtonGroup();
-		modeGroup.add(client);
+		modeGroup.add(clientSwing);
+		modeGroup.add(clientGL);
 		modeGroup.add(server);
 
-		modeGroup.setSelected(normal.getModel(), true);
+		modeGroup.setSelected(clientSwing.getModel(), true);
 
-		JButton openGLButton = new JButton("Iniciar com OpenGL");
-		JButton swingButton = new JButton("Iniciar com Swing");
+		JButton startButton = new JButton("Iniciar Jogo");
 
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(openGLButton);
-		buttonPanel.add(swingButton);
+		buttonPanel.add(startButton);
 
 		JPanel root = new JPanel();
 		root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+		root.setBorder(BorderFactory.createEmptyBorder(20, 26, 20, 26));
 
-		JPanel radioContainer = new JPanel();
-		radioContainer.add(themeContainer);
-		radioContainer.add(modeContainer);
-		
-		root.add(radioContainer);
+		root.add(modeRadioPanel);
+		root.add(Box.createRigidArea(new Dimension(0, 16)));
 		root.add(buttonPanel);
 
-		ActionListener listener = e -> {
-			String folder = themeGroup.getSelection() == normal.getModel() ? "regular" : "halloween";
-			RenderMode mode = e.getSource() == openGLButton ? RenderMode.OPENGL : RenderMode.SWING;
-			
+		ActionListener listener = e -> {			
 			Runnable r;
-			if (modeGroup.getSelection() == server.getModel()) {
-				r = () -> new GameServer(mode, folder);
+			ButtonModel selection = modeGroup.getSelection();
+			if (selection == server.getModel()) {
+				r = () -> new GameServer(false);
 			} else {
-				r = () -> new GameClient(mode, folder);
+				RenderMode mode = selection == clientSwing.getModel() ? RenderMode.SWING : RenderMode.OPENGL;
+				r = () -> new GameClient(mode);
 			}
 			
 			dialog.dispose();
@@ -94,8 +71,7 @@ public class Application {
 			new Thread(r,"Game launcher, at Application.java").start(); //Saindo da Event Dispatch Thread
 		};
 
-		openGLButton.addActionListener(listener);
-		swingButton.addActionListener(listener);
+		startButton.addActionListener(listener);
 
 		dialog.setContentPane(root);
 		dialog.pack();
@@ -106,7 +82,7 @@ public class Application {
 	}
 	
 	public static void runServer(){
-		new GameServer(RenderMode.CONSOLE, "regular");
+		new GameServer(true);
 	}
 
 	public static void main(String[] args) {

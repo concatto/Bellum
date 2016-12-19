@@ -22,7 +22,7 @@ public class HelicopterController extends PlayerController {
 	public void update(float delta) {
 		//Talvez a verificação devesse estar mais acima no call stack
 		if (helicopter.isDead()) {
-			helicopter.setMotionVector(0, 1);
+			helicopter.setMotionVector(0, helicopter.getMotionVector().y);
 		} else {
 			handleMovement();
 			handleWeapons();

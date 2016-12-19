@@ -1,7 +1,6 @@
 package br.univali.game.controllers;
 
 import br.univali.game.GameConstants;
-import br.univali.game.graphics.GameFont;
 import br.univali.game.graphics.Renderer;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;

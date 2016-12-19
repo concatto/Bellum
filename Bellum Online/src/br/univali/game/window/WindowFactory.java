@@ -14,9 +14,18 @@ import br.univali.game.window.opengl.GLWindow;
 import br.univali.game.window.swing.SwingWindow;
 
 public class WindowFactory {
-	private static final String instancesFile = "./instancesfile";
+	private static final File instancesFile = new File("./instancesfile");
 	
 	private static int nextWindowPosition(){
+		if (!instancesFile.exists()) {
+			try {
+				instancesFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return -1;
+			}
+		}
+		
 		int n = -1;
 		try {
 			DataInputStream dis = new DataInputStream(new FileInputStream(instancesFile));
@@ -56,6 +65,7 @@ public class WindowFactory {
 				screenSize.height - height
 			);
 		}
+		
 		return new IntVec(
 			screenSize.width/2 - width/2,
 			screenSize.height/2 - height/2

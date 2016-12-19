@@ -37,7 +37,6 @@ import br.univali.game.remote.RemoteInterface;
 import br.univali.game.remote.RemoteInterfaceImpl;
 import br.univali.game.util.Countdown;
 import br.univali.game.util.IntVec;
-import br.univali.game.window.RenderMode;
 
 public class GameServer {
 	private static final int HEARTBEAT_TIMEOUT = 3000;
@@ -61,8 +60,8 @@ public class GameServer {
 	
 	private IntVec worldSize = new IntVec(800, 600);
 
-	public GameServer(RenderMode renderMode, String textureFolder) {
-		if  ( renderMode == RenderMode.CONSOLE ){
+	public GameServer(boolean useConsole) {
+		if  ( useConsole ){
 			serverWindow = new ConsoleServerWindow();
 			serverWindow.setOnClose(() -> System.out.println("Server closed"));
 		} else {
@@ -72,7 +71,7 @@ public class GameServer {
 
 		serverWindow.publishMessage("Loading textures...");
 		try {
-			textureManager = new TextureManager(textureFolder);
+			textureManager = new TextureManager();
 			
 			textureManager.loadAllTextures();
 			serverWindow.publishMessage("Texture loading completed.");
