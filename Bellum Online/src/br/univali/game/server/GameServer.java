@@ -104,12 +104,15 @@ public class GameServer {
 				
 				long delta = System.currentTimeMillis() - c.getConnection().getLastHeartbeat();
 				if (delta > HEARTBEAT_TIMEOUT) {
-					it.remove();
 					serverWindow.publishMessage("Player disconnected: "+c.getIdentifier());
 					//Provavelmente algo mais acontecerá quando isso ocorrer.
-					if (c.getRole() == PlayerRole.TANK && running){
+					if (c.getRole() == PlayerRole.TANK){
 						running = false;
+					} else if (c.getRole() == PlayerRole.HELICOPTER) {
+						collection.removeEnemy((Enemy) collection.getPlayerObject(c.getIdentifier()));
 					}
+					
+					it.remove();
 				}
 			}
 		}, 0, 1, TimeUnit.SECONDS);
