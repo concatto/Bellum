@@ -12,29 +12,29 @@ import br.univali.game.util.IntVec;
 import br.univali.game.util.Utils;
 import br.univali.game.window.GameWindow;
 
-public abstract class BaseHUD {
+public class BaseHUD {
 	protected GameObjectCollection collection;
 	protected GameWindow window;
 	protected Renderer renderer;
 	protected CombatObject playerObject;
-	protected GameScore score;
+	private GameScore score;
+	private HUDScoreBehaviour scoreBehaviour;
 		
 	public BaseHUD(GameObjectCollection collection, GameWindow window) {
 		this.collection = collection;
 		this.window = window;
 		this.renderer = window.getRenderer();
+		this.scoreBehaviour = new HUDScoreBehaviour();
 	}
 	
 	public void draw() {
 		drawPlayerHealthBar();
-		drawScore();
+		scoreBehaviour.apply(renderer, score);
 		
 		for (Enemy enemy : collection.getEnemies()) {
 			drawEnemyHealth(enemy);
 		}
 	}
-	
-	protected abstract void drawScore();
 	
 	protected void drawIndicatorBar(int index, float fraction, float red, float green, float blue) {
 		drawIndicatorBar(index, fraction, red, green, blue, true);
@@ -106,5 +106,9 @@ public abstract class BaseHUD {
 
 	public void setGameScore(GameScore score) {
 		this.score = score;
+	}
+
+	public void setScoreBehaviour(HUDScoreBehaviour scoreBehaviour) {
+		this.scoreBehaviour = scoreBehaviour;
 	}
 }

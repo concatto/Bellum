@@ -21,7 +21,7 @@ import br.univali.game.server.GameServer;
 import br.univali.game.window.RenderMode;
 
 public class Application {
-	public Application() {
+	public Application() {		
 		JDialog dialog = new JDialog((Dialog) null, "Bellum");
 
 		JRadioButton clientSwing = new JRadioButton("Cliente (Swing)");

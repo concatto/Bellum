@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 
 import br.univali.game.controllers.BaseHUD;
 import br.univali.game.controllers.GameScore;
+import br.univali.game.controllers.HUDScoreBehaviour;
 import br.univali.game.controllers.HelicopterHUD;
 import br.univali.game.controllers.TankHUD;
 import br.univali.game.graphics.GameFont;
@@ -170,14 +171,21 @@ public class GameScreen extends BaseScreen {
 	}
 
 	private BaseHUD createHUD() {
+		BaseHUD hud;
+		
 		switch (role) {
 		case HELICOPTER:
-			return new HelicopterHUD(collection, window);
+			hud = new HelicopterHUD(collection, window);
+			break;
 		case TANK:
-			return new TankHUD(collection, window);
+			hud = new TankHUD(collection, window);
+			break;
 		default:
 			return null;
 		}
+		
+		hud.setScoreBehaviour(new HUDScoreBehaviour(role));
+		return hud;
 	}
 
 	private void drawRespawningScreen() {

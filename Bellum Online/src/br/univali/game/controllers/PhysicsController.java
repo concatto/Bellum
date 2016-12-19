@@ -11,17 +11,16 @@ import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObject;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.Projectile;
+import br.univali.game.util.FloatRect;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.Geometry;
 
 public class PhysicsController {
 	private GameObjectCollection collection;
-	private float gravity;
 	private float groundLevel;
 
 	public PhysicsController(GameObjectCollection collection, float groundLevel) {
 		this.collection = collection;
-		this.gravity = GameConstants.GRAVITY;
 		this.groundLevel = groundLevel;
 	}
 	
@@ -37,14 +36,38 @@ public class PhysicsController {
 		for (Projectile p : collection.getProjectiles()) {
 			if (p.isHostile()) continue;
 			
+			FloatRect aoe = createAreaOfEffect(projectileRadius(p), Geometry.centralPoint(p.getBoundingBox()));
+			
 			for (Enemy enemy : collection.getEnemies()) {
-				if (!enemy.isDead() && didCollide(p, enemy)) {
+				if (enemy.isDead()) continue;
+				
+				if (didCollide(p, enemy)) {
+					for (Enemy sec : collection.getEnemies()) {
+						 if (sec != enemy && Geometry.intersects(sec.getBoundingBox(), aoe)) {
+							 events.add(new BinaryCollisionEvent<>(p, sec));
+						 }
+					}
+					
 					events.add(new BinaryCollisionEvent<>(p, enemy));
+					break;
 				}
 			}
 		}
 		
 		return events;
+	}
+	
+	private static float projectileRadius(Projectile p) {
+		switch (p.getType()) {
+		case CANNONBALL:
+			return 80;
+		default:
+			return p.getWidth() / 2;
+		}
+	}
+	
+	private static FloatRect createAreaOfEffect(float radius, FloatVec center) {
+		return new FloatRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 	}
 	
 	private static boolean didCollide(GameObject subject, GameObject context) {
@@ -114,7 +137,7 @@ public class PhysicsController {
 			object.setY(object.getY() + coefficient * v.y);
 			
 			if (object.isAffectedByGravity()) {
-				object.setMotionVector(v.x, v.y + gravity * delta);
+				object.setMotionVector(v.x, v.y + GameConstants.GRAVITY * delta);
 			}
 		}
 	}

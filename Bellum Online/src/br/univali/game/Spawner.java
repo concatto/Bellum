@@ -45,9 +45,12 @@ public class Spawner {
 	}
 
 	public void spawnExplosion(FloatVec center) {
-		//SoundEffect.EXPLODE.play();
+		spawnExplosion(center, false);
+	}
+	
+	public void spawnExplosion(FloatVec center, boolean big) {
 		DrawableObject explosion = new DrawableObject();
-		prepareObject(explosion, ObjectType.EXPLOSION);
+		prepareObject(explosion, big ? ObjectType.BIG_EXPLOSION : ObjectType.EXPLOSION);
 		
 		explosion.setFrameDuration(GameConstants.EXPLOSION_FRAME_TIME);
 		explosion.setPosition(Geometry.toTopLeft(explosion.getSize(), center));

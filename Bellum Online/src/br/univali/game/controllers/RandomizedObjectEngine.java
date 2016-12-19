@@ -1,6 +1,7 @@
 package br.univali.game.controllers;
 
-import br.univali.game.GameConstants;
+import java.util.function.Function;
+
 import br.univali.game.behaviour.LinearMotionBehaviour;
 import br.univali.game.behaviour.MotionBehaviour;
 import br.univali.game.behaviour.SinusoidalMotionBehaviour;
@@ -8,85 +9,53 @@ import br.univali.game.behaviour.TriangularMotionBehaviour;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.Enemy;
 import br.univali.game.objects.GameObjectCollection;
+import br.univali.game.util.Countdown;
 import br.univali.game.util.FloatVec;
 import br.univali.game.util.IntVec;
 import br.univali.game.util.Utils;
 
 public class RandomizedObjectEngine {
-	private long lastSpecial;
-	private long lastHealth;
-	private long healthPerSecond = 0;
-	private long specialPerSecond = 0;
-	private long enemyInterval = 0;
-	private long lastSpawn = 0;
-	private float maxEnemies = 1;
+	private ProbabilityGenerator healthGenerator;
+	private ProbabilityGenerator specialGenerator;
 	private GameObjectCollection collection;
 	private IntVec windowSize;
+	private Countdown countdown;
+	private long startTime = System.currentTimeMillis();
 	
 	public RandomizedObjectEngine(GameObjectCollection collection, IntVec windowSize) {
 		this.collection = collection;
 		this.windowSize = windowSize;
-		
-		lastSpecial = System.currentTimeMillis();
-		lastHealth = System.currentTimeMillis();
-		specialPerSecond = 0;
-		healthPerSecond = 0;
+		this.healthGenerator = new ProbabilityGenerator(0, 0, 45000, 1);
+		this.specialGenerator = new ProbabilityGenerator(0, 0, 60000, 1);
 	}
 
 	public boolean shouldGenerateEnemy() {
-		//Revisar este método
-		long delta = System.currentTimeMillis() - lastSpawn;
-		int enemyCount = collection.getEnemies().size();
+		if (countdown == null) {
+			countdown = Countdown.createAndStart(ProbabilityGenerator.CHECK_INTERVAL);
+		}
 		
-		if (delta > enemyInterval && enemyCount < getMaxEnemies()) {
-			enemyInterval = (long) (Utils.generateRandom(800, 2000));
-			lastSpawn = System.currentTimeMillis();
-			return true;
+		int enemies = collection.getEnemies().size();
+		long delta = System.currentTimeMillis() - startTime;
+		if (countdown.finished()) {
+			countdown = Countdown.createAndStart(ProbabilityGenerator.CHECK_INTERVAL);
+			
+			//Interpolação (segundos, multiplicador) entre (0, 1) e (90, 3)
+			float multiplier = Utils.lerp(delta, 0, 1, 90000, 3);
+			float chance = (1 - Utils.growthCurve(enemies, 0.3f)) * multiplier;
+			if (Utils.generateRandom() < chance) {
+				return true;
+			}
 		}
 		
 		return false;
 	}
 	
 	public boolean shouldGenerateSpecial() {
-		//Revisar este método também
-		long delta = System.currentTimeMillis() - lastSpecial;
-		if (delta - specialPerSecond > 1000) {
-			specialPerSecond = delta;
-		
-			if (delta > GameConstants.MIN_PICKUP_INTERVAL) {
-				if (Math.random() < GameConstants.SPECIAL_PICKUP_CHANCE * specialPerSecond
-						|| delta > GameConstants.MAX_PICKUP_INTERVAL) {
-					
-					lastSpecial = System.currentTimeMillis();
-					specialPerSecond = 0;
-					
-					return true;
-				}
-			}
-		}
-		
-		return false;
+		return specialGenerator.calculate();
 	}
 	
 	public boolean shouldGenerateHealth() {
-		//Idem
-		long delta = System.currentTimeMillis() - lastHealth;
-		if (delta - healthPerSecond > 1000) {
-			healthPerSecond = delta;
-			
-			if (delta > GameConstants.MIN_PICKUP_INTERVAL) {
-				if (Math.random() < GameConstants.HEALTH_PICKUP_CHANCE * healthPerSecond
-						|| delta > GameConstants.MAX_PICKUP_INTERVAL) {
-					
-					lastHealth = System.currentTimeMillis();
-					healthPerSecond = 0;
-					
-					return true;
-				}
-			}
-		}
-		
-		return false;
+		return healthGenerator.calculate();
 	}
 	
 	public FloatVec generatePickupPosition() {
@@ -128,9 +97,38 @@ public class RandomizedObjectEngine {
 	
 		helicopter.setPosition(new FloatVec(Utils.generateRandom(0, xMax), Utils.generateRandom(0, yMax)));
 	}
-
-	public float getMaxEnemies() {
-		maxEnemies += 0.0000005;
-		return maxEnemies;
+	
+	private class ProbabilityGenerator {
+		private static final long CHECK_INTERVAL = 100;
+		private Countdown countdown;
+		private long last;
+		private Function<Long, Float> probabilityFunction;
+		
+		public ProbabilityGenerator(float x0, float y0, float x1, float y1) {
+			probabilityFunction = delta -> {
+				return Utils.lerp(delta / (float) CHECK_INTERVAL, x0, y0, x1, y1);
+			};
+			
+			last = System.currentTimeMillis();
+		}		
+		
+		public boolean calculate() {
+			if (countdown == null) {
+				countdown = Countdown.createAndStart(CHECK_INTERVAL);
+			}
+			
+			long delta = System.currentTimeMillis() - last;
+			if (countdown.finished()) {
+				countdown = Countdown.createAndStart(CHECK_INTERVAL);
+				
+				float chance = probabilityFunction.apply(delta);
+				if (Utils.generateRandom() < chance) {
+					last = System.currentTimeMillis();
+					return true;
+				}
+			}
+			
+			return false;
+		}
 	}
 }

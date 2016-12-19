@@ -79,7 +79,7 @@ public class LogicController {
 			
 			if (e.hasDied()) {
 				spawner.spawnExplosion(Geometry.centralPoint(e.getBoundingBox()));
-				score.incrementTankScore(10);
+				score.incrementTankScore(5);
 				
 				if (e.isBot()) {
 					it.remove();
@@ -123,7 +123,7 @@ public class LogicController {
 		FloatVec center = Geometry.centralPoint(p.getBoundingBox());
 		
 		if (p.getType() == ObjectType.CANNONBALL) {
-			spawner.spawnExplosion(center);
+			spawner.spawnExplosion(center, true);
 		} else if (p.getType() == ObjectType.BULLET) {
 			spawner.spawnSpark(center);
 		} else if (p.getType() == ObjectType.SPECIAL_BULLET) {

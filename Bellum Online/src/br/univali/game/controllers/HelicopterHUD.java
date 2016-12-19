@@ -1,6 +1,5 @@
 package br.univali.game.controllers;
 
-import br.univali.game.graphics.GameFont;
 import br.univali.game.objects.CombatObject;
 import br.univali.game.objects.GameObjectCollection;
 import br.univali.game.objects.PlayerTank;
@@ -29,14 +28,5 @@ public class HelicopterHUD extends BaseHUD {
 	public void setPlayerObject(CombatObject playerObject) {
 		super.setPlayerObject(playerObject);
 		this.helicopter = playerObject;
-	}
-
-	@Override
-	protected void drawScore() {
-		renderer.setFont(GameFont.MEDIUM_BOLD);
-		renderer.setColor(0, 0.5f, 0);
-		renderer.drawText("Helicopters: " + score.getHelicoptersScore(), 400, 10);
-		renderer.setColor(0.5f, 0f, 0);
-		renderer.drawText("Tank: " + score.getTankScore(), 400, 40);
 	}
 }
